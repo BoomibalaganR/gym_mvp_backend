@@ -4,7 +4,7 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/server.js",
-    "dev": "ts-node-dev --respawn --transpile-only src/server.ts"
+  "dev": "nodemon --legacy-watch --watch  --ext ts,js,json --exec ts-node-dev --transpile-only app/src/server.ts"
   },
   "dependencies": {
     "@google-cloud/storage": "^7.17.2",
@@ -15,7 +15,7 @@
     "http-status": "^2.1.0",
     "joi": "^18.0.1",
     "jsonwebtoken": "^9.0.0",
-    "mongoose": "^8.4.0",
+    "mongoose": "^8.19.1",
     "morgan": "^1.10.0",
     "multer": "^2.0.2",
     "nodemailer": "^6.9.3"

@@ -22,25 +22,17 @@ export const createMemberSchema = {
     referred_by: Joi.string().trim().max(50).optional().allow(null, '').messages({
       'string.max': 'Referred by must be at most 50 characters'
     }),
-    address: Joi.string().trim().max(200).required().messages({
-      'string.empty': 'Address is required',
-      'string.max': 'Address must be at most 200 characters',
-      'any.required': 'Address is required'
+    address: Joi.string().trim().max(200).optional().allow(null, '').messages({
+      'string.max': 'Address must be at most 200 characters'
     }),
-    working_status: Joi.string().valid('active', 'inactive').required().messages({
-      'any.only': 'Working status must be either active or inactive',
-      'string.empty': 'Working status is required',
-      'any.required': 'Working status is required'
+    working_status: Joi.string().valid('active', 'inactive').optional().messages({
+      'any.only': 'Working status must be either active or inactive'
     }),
-    session: Joi.string().valid('morning', 'evening').required().messages({
-      'any.only': 'Session must be either morning or evening',
-      'string.empty': 'Session is required',
-      'any.required': 'Session is required'
+    session: Joi.string().valid('morning', 'evening').optional().messages({
+      'any.only': 'Session must be either morning or evening'
     }),
-    branch: Joi.string().trim().max(50).required().messages({
-      'string.empty': 'Branch is required',
-      'string.max': 'Branch must be at most 50 characters',
-      'any.required': 'Branch is required'
+    branch: Joi.string().trim().max(50).optional().allow(null, '').messages({
+      'string.max': 'Branch must be at most 50 characters'
     })
   }).options({ abortEarly: false })
 };
