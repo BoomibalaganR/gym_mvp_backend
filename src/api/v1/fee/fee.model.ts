@@ -1,17 +1,23 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
-const FeeSchema = new mongoose.Schema({
-  gym_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Gym', required: true },
-  member_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Member', required: true },
-  dateOfPayment: { type: Date, default: Date.now },
-  paymentType: { type: String, enum: ['cash', 'online', 'card', 'upi'], default: 'cash' },
-  amount: { type: Number, required: true },
-  collectedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'Member' },
-  verifiedByOwner: { type: Boolean, default: false },
-  month: { type: String, required: true } // 'YYYY-MM'
-}, { timestamps: true });
+const FeeSchema = new mongoose.Schema(
+  {
+    gym: { type: mongoose.Schema.Types.ObjectId, ref: "Gym", required: true },
+    member: { type: mongoose.Schema.Types.ObjectId, ref: "Member", required: true },
+    month: { type: String, required: true }, // 'YYYY-MM'
+    paidAmount: { type: Number, required: true },
+    pendingAmount: { type: Number, required: true },
+    paymentStatus: { type: String, enum: ["full", "pending"], default: "pending" },
+    paymentType: { type: String, enum: ["cash", "gpay"], default: "cash" },
+    collectedBy: { type: mongoose.Schema.Types.ObjectId, ref: "Member", required: true },
+    dateOfPayment: { type: Date, default: Date.now },
+    verifiedByOwner: { type: Boolean, default: false },
+    transactionId: { type: String } // optional, for external payments
+  },
+  { timestamps: true }
+);
 
-// Prevent duplicate member+month per gym
-FeeSchema.index({ gym_id: 1, member_id: 1, month: 1 }, { unique: true });
+// Unique index to prevent duplicate fee for same member & month in a gym
+FeeSchema.index({ gym: 1, member: 1, month: 1 }, { unique: true });
 
-export default mongoose.model('Fee', FeeSchema);
+export default mongoose.model("Fee", FeeSchema);
