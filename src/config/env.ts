@@ -1,4 +1,5 @@
 import dotenv from 'dotenv';
+import path from 'path';
 
 dotenv.config();
 
@@ -11,5 +12,9 @@ export const config = {
   smtpPort: Number(process.env.SMTP_PORT || 587),
   smtpUser: process.env.SMTP_USER || '',
   smtpPass: process.env.SMTP_PASS || '',
-  appEmail: process.env.APP_EMAIL || 'no-reply@example.com'
+  appEmail: process.env.APP_EMAIL || 'no-reply@example.com',
+
+   project_id: 'vitagist-consumer-docu',//process.env.FIREBASE_PROJECT_ID,
+    bucket_name: 'vitagist-consumer-docu.appspot.com',//process.env.FIREBASE_BUCKET_NAME,
+    key_file: path.resolve(process.cwd(), 'serviceAccountKey.json'),
 };
