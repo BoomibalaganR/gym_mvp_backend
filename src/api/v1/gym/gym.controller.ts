@@ -15,6 +15,11 @@ export class GymController {
     const gym = await this.service.getGymById(req.params.id);
     return ApiResponse.success(res, 'Gym fetched', gym);
   });
+  
+  list = catchAsync(async (req: any, res: any) => {
+    const gyms = await this.service.getGym();
+    return ApiResponse.success(res, 'Gyms fetched', gyms);
+  });
 }
 
 export default new GymController();

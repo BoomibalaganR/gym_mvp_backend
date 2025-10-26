@@ -7,5 +7,6 @@ const router = Router();
 
 router.post('/onboard', validate(createGymSchema), GymController.onboard);
 router.get('/:id', GymController.get);
+router.get('/', GymController.list);
 
 export default router;
