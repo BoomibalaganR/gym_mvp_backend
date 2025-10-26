@@ -1,8 +1,14 @@
-import 'dotenv/config';
-
 import app from './app';
 import { config } from './config/env';
 import { connectDB } from './config/db';
+import dotenv from 'dotenv';
+
+dotenv.config(); // must come first
+
+
+
+
+
 
 (async () => {
   await connectDB();
