@@ -1,4 +1,5 @@
 import { Storage as FirebaseStorage } from '@google-cloud/storage';
+import { config } from '../config/env';
 import path from 'path';
 
 export interface FileUpload {
@@ -82,9 +83,9 @@ export class StorageService {
 
 
 export const createStorage = (): StorageService => {
-  const PROJECT_ID = process.env.FIREBASE_PROJECT_ID!;
-  const BUCKET_NAME = process.env.FIREBASE_BUCKET_NAME!;
-  const KEY_FILE = path.resolve(process.cwd(), process.env.FIREBASE_KEY_FILE!);
+  const PROJECT_ID = config.project_id!;
+  const BUCKET_NAME = config.bucket_name!;
+  const KEY_FILE = config.key_file!;
 
   const firebaseClient = new FirebaseStorageClient(BUCKET_NAME, PROJECT_ID, KEY_FILE);
   return new StorageService(firebaseClient);
