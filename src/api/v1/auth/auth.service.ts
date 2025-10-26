@@ -12,7 +12,7 @@ export class AuthService {
       throw new ApiError(httpStatus.UNAUTHORIZED, 'Member not found');
     }
 
-    const ok = await bcrypt.compare(password, member.password);
+    const ok = await member.isPasswordMatch(password);
     if (!ok) {
       throw new ApiError(httpStatus.UNAUTHORIZED, 'Invalid credentials');
     }
