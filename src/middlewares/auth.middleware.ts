@@ -12,7 +12,7 @@ export interface AuthenticatedRequest extends Request {
   gym?: any;   // Full gym object or sanitized version
 }
 
-export default async function authenticate(
+export default async function authenticateUser(
   req: AuthenticatedRequest,
   _res: Response,
   next: NextFunction
@@ -28,11 +28,14 @@ export default async function authenticate(
     const decoded = jwt.verify(token, config.jwtSecret) as any;
 
     // 🔹 Fetch the full member object (exclude password)
-    const member = await Member.findOne({ _id: decoded.id, gym_id: decoded.gym_id }).select('-password');
+    const member = await Member.findOne({ _id: decoded.id})
+    .select('-password')
+    .populate('gym');
+
     if (!member) return next(new ApiError(401, 'Member not found'));
 
     // 🔹 Fetch the associated gym object
-    const gym = await Gym.findById(member.gym_id);
+    const gym = await Gym.findById(member.gym);
     if (!gym) return next(new ApiError(401, 'Gym not found'));
 
     // 🔹 Attach both objects to request
@@ -41,6 +44,7 @@ export default async function authenticate(
 
     next();
   } catch (err) {
+    console.error('Authentication error:', err);
     return next(new ApiError(401, 'Invalid or expired token'));
   }
 }
