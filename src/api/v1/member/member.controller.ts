@@ -3,26 +3,39 @@ import MemberService from './member.service';
 import catchAsync from '../../../utils/catchAsync';
 
 export class MemberController {
+    
   create = catchAsync(async (req: any, res: any) => {
     const member = await MemberService.create(req.gym, req.user, req.file, req.body);
     return ApiResponse.created(res, 'Member created', member);
   });
 
   list = catchAsync(async (req: any, res: any) => {
-    const user = req.user;
-    const result = await MemberService.list(user.gym_id, req.query);
+    const result = await MemberService.list(req.gym, req.user, req.query);
     return ApiResponse.success(res, 'Members fetched', result);
   });
 
+  get = catchAsync(async (req: any, res: any) => {
+    const result = await MemberService.get(req.gym, req.user, req.params.id, req.query);
+    return ApiResponse.success(res, 'Member fetched', result);
+  });
+  
   update = catchAsync(async (req: any, res: any) => {
-    const user = req.user;
-    const updated = await MemberService.update(user.gym_id, req.params.id, req.body);
+    const updated = await MemberService.update(req.gym, req.user, req.params.id, req.body);
     return ApiResponse.success(res, 'Member updated', updated);
   });
 
-  remove = catchAsync(async (req: any, res: any) => {
-    const user = req.user;
-    await MemberService.remove(user.gym_id, req.params.id);
+  uploadProfilePic = catchAsync(async (req: any, res: any) => {
+    const updated = await MemberService.uploadProfilePic(req.gym, req.user, req.params.id, req.file);
+    return ApiResponse.success(res, 'Profile picture uploaded', updated);
+  });
+
+  deleteProfilePic = catchAsync(async (req: any, res: any) => {  
+    const updated = await MemberService.deleteProfilePic(req.gym, req.user, req.params.id);
+    return ApiResponse.success(res, 'Profile picture deleted', updated);
+  });
+  
+  deactivate = catchAsync(async (req: any, res: any) => {
+    await MemberService.deactivate(req.gym, req.user, req.params.id);
     return ApiResponse.success(res, 'Member deleted');
   });
 
