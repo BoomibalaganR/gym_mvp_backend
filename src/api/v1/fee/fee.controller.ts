@@ -21,7 +21,7 @@ export class FeeController {
     });
     
     getLastNMonthsMemberPaymentStatus = catchAsync(async (req: Request, res: Response) => {
-      const result = await FeeService.getLastNMonthsMembers(req.gym, req.user, req.query);
+      const result = await FeeService.getMembersFeeReport(req.gym, req.user, req.query);
       return ApiResponse.success(res, 'Member payment status retrieved', result);
     });
 }

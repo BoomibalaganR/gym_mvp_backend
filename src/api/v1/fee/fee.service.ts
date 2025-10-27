@@ -3,7 +3,6 @@ import { format, subMonths } from 'date-fns';
 import ApiError from '../../../utils/ApiError';
 import Fee from './fee.model';
 import Member from '../member/member.model'
-import mongoose from 'mongoose';
 import { parseISO } from 'date-fns';
 
 export class FeeService {
@@ -96,130 +95,6 @@ export class FeeService {
     }));
   }
 
- // ✅ Get last N months paid/unpaid member list
-async getLastNMonthsMembers(gym: any, user: any, query: any) { 
-   //TODO: need to work on aggregation for paid and unpaid list 
-  const { monthsCount = 0, status } = query;
-  if (monthsCount < 0) throw new ApiError(400, "monthsCount must be >= 0");
-
-  const today = new Date();
-  const months: string[] = [];
-
-  // 🗓️ Build list of target months (current or last N months)
-  if (monthsCount === 0) {
-    months.push(format(today, "yyyy-MM"));
-  } else {
-    for (let i = 1; i <= monthsCount; i++) {
-      months.push(format(subMonths(today, i), "yyyy-MM"));
-    }
-  }
-
-  // 🧩 Build aggregation
-  const pipeline: any[] = [
-    { $match: { gym: new mongoose.Types.ObjectId(gym._id), role: { $ne: "owner" } } },
-    {
-      $lookup: {
-        from: "fees",
-        let: { memberId: "$_id" },
-        pipeline: [
-          {
-            $match: {
-              $expr: {
-                $and: [
-                  { $eq: ["$member", "$$memberId"] },
-                  { $in: ["$month", months] },
-                ],
-              },
-            },
-          },
-          {
-            $project: {
-              month: 1,
-              paymentStatus: 1,
-              paidAmount: 1,
-              pendingAmount: 1,
-              collectedBy: 1,
-              createdAt: 1,
-            },
-          },
-        ],
-        as: "fees",
-      },
-    },
-    {
-      $addFields: {
-  totalPaidAmount: { $sum: "$fees.paidAmount" },
-  totalPendingAmount: { $sum: "$fees.pendingAmount" },
-  paidMonths: {
-    $map: {
-      input: {
-        $filter: {
-          input: "$fees",
-          as: "f",
-          cond: { $eq: ["$$f.paymentStatus", "full"] }, // ✅ FIXED
-        },
-      },
-      as: "f",
-      in: {
-        month: "$$f.month",
-        paidAmount: "$$f.paidAmount",
-        collectedBy: "$$f.collectedBy",
-        paidDate: "$$f.dateOfPayment",
-      },
-    },
-  },
-  unpaidMonths: {
-    $map: {
-      input: {
-        $filter: {
-          input: "$fees",
-          as: "f",
-          cond: {
-            $or: [
-              { $eq: ["$$f.paymentStatus", "pending"] },
-              { $eq: ["$$f.paymentStatus", "unpaid"] },
-            ],
-          },
-        },
-      },
-      as: "f",
-      in: {
-        month: "$$f.month",
-        pendingAmount: "$$f.pendingAmount",
-      },
-    },
-  },
-},
-
-    },
-  ];
-
-  // 🎯 Apply filter based on status
-  if (status === "paid") {
-    pipeline.push({ $match: { "paidMonths.0": { $exists: true } } });
-  } else if (status === "unpaid") {
-    pipeline.push({ $match: { $or: [{ "unpaidMonths.0": { $exists: true } }, { totalPendingAmount: { $gt: 0 } }] } });
-  }
-
-  // 🧾 Final shape
-  pipeline.push({
-    $project: {
-      member_id: "$_id",
-      name: 1,
-      nickname: 1,
-      phone: 1,
-      totalPaidAmount: 1,
-      totalPendingAmount: 1,
-      paidMonths: 1,
-      unpaidMonths: 1,
-    },
-  });
-
-  // 🚀 Run aggregation
-  const members = await Member.aggregate(pipeline);
-  return { months, members };
-}
-
 
   // ✅ Mark multiple fees as verified by owner
   async verifyFeesByIds(gym: any, user: any, payload: any) {
@@ -253,6 +128,135 @@ async getLastNMonthsMembers(gym: any, user: any, query: any) {
       alreadyVerifiedIds
     };
   }
+
+
+ async  getMembersFeeReport(gym: any, user: any, query: any) {
+  const { status, month, monthsCount = 0, continuousUnpaid = false } = query;
+
+  const today = new Date();
+  let months: string[] = [];
+
+  // 🗓️ Build month list
+  if (month) months = [month];
+  else if (monthsCount > 0) {
+    for (let i = 1; i <= monthsCount; i++) {
+      months.push(format(subMonths(today, i), "yyyy-MM"));
+    }
+  } else months = [format(today, "yyyy-MM")];
+
+  // 🧾 Get all active members
+  const members = await Member.find({
+    gym: gym._id,
+    role: { $ne: "owner" },
+  });
+
+  // 🧾 Get all fee records for these months
+  const fees = await Fee.find({
+    gym: gym._id,
+    month: { $in: months },
+  }).populate("collectedBy", "name");
+
+  const feeMap = new Map();
+  for (const f of fees) {
+    if (!feeMap.has(f.member.toString())) feeMap.set(f.member.toString(), []);
+    feeMap.get(f.member.toString()).push(f);
+  }
+
+  const paidMembers: any[] = [];
+  const unpaidMembers: any[] = [];
+  const pendingMembers: any[] = [];
+
+  for (const member of members) {
+    const memberFees = feeMap.get(member._id.toString()) || [];
+
+    const memberInfo = {
+      _id: member._id,
+      phone: member.phone,
+      nickname: member.nickname,
+      is_active: member.is_active,
+      memberName: member.name,
+      profile_url: await member.getProfilePicUrl(),
+    };
+
+    // ✅ Paid Months
+    const paidMonths = memberFees
+      .filter(f => f.paymentStatus === "full")
+      .map(f => ({
+        month: f.month,
+        paidAmount: f.paidAmount,
+        collectedBy: f.collectedBy?.name || "N/A",
+        dateOfPayment: f.dateOfPayment,
+      }));
+    const totalPaidAmount = paidMonths.reduce((a, b) => a + (b.paidAmount || 0), 0);
+
+    // ⚠️ Pending Payments
+    const pendingMonths = memberFees
+      .filter(f => f.paymentStatus === "pending")
+      .map(f => ({
+        month: f.month,
+        pendingAmount: f.pendingAmount,
+        paidAmount: f.paidAmount,
+      }));
+    const totalPendingAmount = pendingMonths.reduce((a, b) => a + (b.pendingAmount || 0), 0);
+
+    // ❌ Unpaid (months not found in fees)
+    const paidOrPendingMonths = memberFees.map(f => f.month);
+    const unpaidMonths = months
+      .filter(m => !paidOrPendingMonths.includes(m))
+      .map(m => ({ month: m, amountToPay: member.monthlyFee || 200 }));
+    const totalAmountToPay = unpaidMonths.reduce((a, b) => a + (b.amountToPay || 0), 0);
+
+    // 🎯 Logic per status
+    if (status === "paid" && paidMonths.length > 0) {
+      paidMembers.push({
+        ...memberInfo,
+        paidMonths,
+        totalPaidAmount,
+      });
+    }
+
+    if (status === "pending" && pendingMonths.length > 0) {
+      pendingMembers.push({
+        ...memberInfo,
+        pendingPayments: pendingMonths,
+        totalPendingAmount,
+      });
+    }
+
+    if (status === "unpaid") {
+      if (continuousUnpaid) {
+        // include only if ALL months are unpaid
+        if (unpaidMonths.length === months.length) {
+          unpaidMembers.push({
+            ...memberInfo,
+            unpaidMonths,
+            totalAmountToPay,
+          });
+        }
+      } else if (unpaidMonths.length > 0) {
+        unpaidMembers.push({
+          ...memberInfo,
+          unpaidMonths,
+          totalAmountToPay,
+        });
+      }
+    }
+  }
+
+  // 🧩 Return unified structured response
+  return {
+    months,
+    members:
+      status === "paid"
+        ? paidMembers
+        : status === "unpaid"
+        ? unpaidMembers
+        : pendingMembers,
+  };
 }
+
+
+}
+
 
 export default new FeeService();

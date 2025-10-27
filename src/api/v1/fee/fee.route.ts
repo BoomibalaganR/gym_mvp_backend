@@ -11,5 +11,5 @@ const router = Router();
 router.post('/:memberId/create', authenticateUser, authorize('owner', 'collector'), validate(createFeeSchema), FeeController.create);
 router.get('/list', authenticateUser, authorize('owner', 'collector'), validate(feeDateRangeSchema), FeeController.list);
 router.post('/verify', authenticateUser, authorize('owner', 'collector'), validate(verifyFeeSchema), FeeController.updateVerified);
-router.get('/last-n-months', authenticateUser, authorize('owner', 'collector'), validate(lastNMonthsMemberSchema), FeeController.getLastNMonthsMemberPaymentStatus);
+router.get('/report', authenticateUser, authorize('owner', 'collector'), validate(lastNMonthsMemberSchema), FeeController.getLastNMonthsMemberPaymentStatus);
 export default router;

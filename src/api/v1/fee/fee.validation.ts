@@ -111,7 +111,9 @@ export const feeDateRangeSchema = {
 
 export const lastNMonthsMemberSchema = {
   query: Joi.object({
+    month: Joi.string(),
     monthsCount: Joi.number().integer().min(0).optional(),
-    status: Joi.string().valid('paid', 'unpaid', 'all').optional()
+    status: Joi.string().valid('paid', 'unpaid', 'pending').optional(), 
+    continuousUnpaid: Joi.boolean().optional()
   }).options({ stripUnknown: true, abortEarly: true })
 };
