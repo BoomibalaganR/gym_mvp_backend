@@ -1,6 +1,7 @@
 import { FileUpload, StorageService, createStorage } from '../../../services/storage.service';
 
 import bcrypt from 'bcryptjs';
+import crypto from "crypto";
 import mongoose from 'mongoose';
 
 const MemberSchema = new mongoose.Schema({
@@ -12,6 +13,7 @@ const MemberSchema = new mongoose.Schema({
   email: { type: String},
   nickname: { type: String },
   profilepic_content_type: { type: String },
+  profilepic_hash: { type: String, default: null },
   referred_by: {
   type: mongoose.Schema.Types.ObjectId,
   ref: 'Member',
@@ -35,46 +37,69 @@ MemberSchema.methods.isPasswordMatch = async function (password) {
     return await bcrypt.compare(password, this.password)
 }
 
-MemberSchema.methods.getProfilePicKey = function (): string {
+MemberSchema.methods.getProfilePicStorageKey = function (): string {
   return `member-${this._id}/profilepic`;
 };
 
-MemberSchema.methods.uploadProfilePic = async function (file: FileUpload): Promise<string> {
-  const storage: StorageService = createStorage();
-  const filePath = this.getProfilePicKey();
+MemberSchema.methods.uploadProfilePic = async function (file: FileUpload) {
+  const storage = createStorage();
+  const filePath = this.getProfilePicStorageKey();
 
-  // Upload and get signed URL
-  const { filePath: pathInStorage, url } = await storage.upload(file, filePath, {
-    ResponseContentType: file.mimetype
+  // Upload file to Firebase/S3
+  await storage.upload(file, filePath, {
+    ResponseContentType: file.mimetype,
   });
+
+  // Save metadata
   this.profilepic_content_type = file.mimetype;
+
+  // New UUID → forces client to refresh cache
+  this.profilepic_hash = crypto.randomUUID();
+
   await this.save();
 
-  return url; // return signed URL to frontend
+  return {
+    hash: this.profilepic_hash
+  };
 };
 
-MemberSchema.methods.deleteProfilePic = async function (): Promise<void> {
-  const storage: StorageService = createStorage();
-  const filePath = this.getProfilePicKey();
+MemberSchema.methods.deleteProfilePic = async function () {
+  const storage = createStorage();
+  const filePath = this.getProfilePicStorageKey();
+
   if (filePath) {
     await storage.delete(filePath);
-    this.profilepic_content_type = null;
-    await this.save();
-}
+  }
+
+  this.profilepic_hash = null;
+  this.profilepic_content_type = null;
+
+  await this.save();
 };
 
-MemberSchema.methods.getProfilePicUrl = async function (): Promise<string> {
-  if (!this.profilepic_content_type) return '';
+
+MemberSchema.methods.getSignedProfilePicUrl = async function (): Promise<string> {
+  if (!this.profilepic_content_type || !this.profilepic_hash) return '';
 
   const storage = createStorage();
 
-  // Add extra params like ResponseContentType dynamically
   const extraParams = this.profilepic_content_type
     ? { ResponseContentType: this.profilepic_content_type }
     : {};
-   
-  return await storage.getSignedUrl(this.getProfilePicKey(), undefined, extraParams);
+
+  return await storage.getSignedUrl(
+    this.getProfilePicStorageKey(),
+    undefined,
+    extraParams
+  );
 };
+
+MemberSchema.methods.getProfilePicProxyUrl = function (): string {
+  if (!this.profilepic_content_type || !this.profilepic_hash) return '';
+
+  return `/api/v1/profile-pic/${this._id}?h=${this.profilepic_hash}`;
+};
+
 
 MemberSchema.pre("save", async function (next) {
   if (!this.isModified("password") || !this.password) return next();

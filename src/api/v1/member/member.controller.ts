@@ -24,6 +24,13 @@ export class MemberController {
     return ApiResponse.success(res, 'Member updated', updated);
   });
 
+  getProfilePic = catchAsync(async (req: any, res: any) => {
+    const signedUrl = await MemberService.getProfilePicUrl(req.gym, req.user, req.params.id, req.query);
+
+    return ApiResponse.success(res, 'Profile picture URL fetched', { url: signedUrl });
+
+  });
+  
   uploadProfilePic = catchAsync(async (req: any, res: any) => {
     const updated = await MemberService.uploadProfilePic(req.gym, req.user, req.params.id, req.file);
     return ApiResponse.success(res, 'Profile picture uploaded', updated);

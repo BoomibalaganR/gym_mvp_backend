@@ -16,6 +16,7 @@ router.put('/:id', authenticateUser, authorize('owner'), validate(updateMemberSc
 router.delete('/:id', authenticateUser, authorize('owner'), MemberController.deactivate);
 router.patch('/bot-access', authenticateUser, authorize('owner'), MemberController.setBotAccess);
 
+router.get('/:id/profile-pic', authenticateUser, authorize('owner'), MemberController.getProfilePic);
 router.post('/:id/profile-pic', authenticateUser, authorize('owner'), MemberController.uploadProfilePic);
 router.delete('/:id/profile-pic', authenticateUser, authorize('owner'), MemberController.deleteProfilePic);
 export default router;

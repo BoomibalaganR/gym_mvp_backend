@@ -183,6 +183,28 @@ export class MemberService {
 
       return sanitized;
   }
+  
+  async getProfilePicUrl(gymId: string, user: any, memberId: string, query: any) {
+
+    const member = await Member.findOne({
+      _id: memberId,
+      gym: gymId
+    }).select("profilepic_hash profilepic_content_type").lean();
+
+    if (!member || !member.profilepic_hash) {
+      throw new ApiError(httpStatus.NOT_FOUND, "Profile picture not found");
+    }
+
+    const clientHash = query.h;
+
+    // Tell frontend to refresh cache if hash mismatch
+    if (clientHash !== member.profilepic_hash) {
+      throw new ApiError(httpStatus.NOT_MODIFIED, "Profile picture not modified");
+    }
+
+    return member.getSignedProfilePicUrl();
+  }
+
 
   async uploadProfilePic(gym: any, user: any, memberId: string, file: FileUpload) {
       
