@@ -10,7 +10,7 @@ export const createGymSchema = {
       'string.empty': 'Location is required',
       'any.required': 'Location is required'
     }),
-    phone: Joi.string().pattern(/^\d{10}$/).required().messages({
+    phone: Joi.string().pattern(/^\d{10}$/).messages({
       'string.empty': 'Gym phone number is required',
       'string.pattern.base': 'Phone must be 10 digits',
       'any.required': 'Gym phone number is required'
@@ -33,7 +33,7 @@ export const createGymSchema = {
       'string.email': 'Owner email must be valid',
       'any.required': 'Owner email is required'
     }),
-    owner_password: Joi.string().min(6).required().messages({
+    owner_password: Joi.string().min(6).messages({
       'string.empty': 'Owner password is required',
       'string.min': 'Owner password must be at least 6 characters',
       'any.required': 'Owner password is required'
