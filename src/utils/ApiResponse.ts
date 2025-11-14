@@ -1,4 +1,5 @@
 import { Response } from 'express';
+import httpStatus  from 'http-status';
 
 export default class ApiResponse<T = any> {
   constructor(
@@ -11,25 +12,29 @@ export default class ApiResponse<T = any> {
   ) { }
 
   send(res: Response) {
-      // Friendly JSON: only include fields that are not null
-      const payload: any = {
-        success: this.success,
-        message: this.message,
-      };
+    const payload: any = {
+      success: this.success,
+      message: this.message,
+    };
 
-      if (this.data !== null) payload.data = this.data;
-      if (this.meta !== null) payload.meta = this.meta;
-      if (this.details !== null) payload.details = this.details;
+    // Only attach fields when defined
+    if (this.data !== undefined) payload.data = this.data;
+    if (this.meta !== undefined) payload.meta = this.meta;
+    if (this.details !== undefined) payload.details = this.details;
 
-      return res.status(this.statusCode).json(payload);
-    }
+    return res.status(this.statusCode).json(payload);
+  }
 
   static success(res: Response, message: string, data?: any, meta?: any) {
-    return new ApiResponse(true, 200, message, data, meta).send(res);
+    return new ApiResponse(true, httpStatus.OK, message, data, meta).send(res);
   }
 
   static created(res: Response, message: string, data?: any) {
-    return new ApiResponse(true, 201, message, data).send(res);
+    return new ApiResponse(true, httpStatus.CREATED, message, data).send(res);
+  }  
+
+  static redirect(res: Response, url: string) {
+    return res.redirect(httpStatus.TEMPORARY_REDIRECT, url);
   }
 
   static error(res: Response, statusCode: number, message: string, details?: any) {
