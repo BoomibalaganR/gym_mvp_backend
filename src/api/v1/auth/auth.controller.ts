@@ -6,8 +6,8 @@ const service = new AuthService();
 
 export class AuthController {
   login = catchAsync(async (req: any, res: any) => {
-    const { phone, email, password } = req.body;
-    const result = await service.login(email, password);
+    const result = await service.login(req.body);
+
     return ApiResponse.success(res, 'Login successful', result);
   });
 }
