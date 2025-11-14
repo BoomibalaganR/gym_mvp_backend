@@ -10,16 +10,16 @@ export class MemberService {
   async create(gym: any, user: any, file: any, payload: any) {
     const existing = await Member.findOne({
       gym: gym._id,
-      $or: [{ name: payload.name }, { phone: payload.phone }]
+      $or: [{ first_name: payload.first_name }, { phone: payload.phone }]
     });
 
-    if (existing) {
-      if (existing.name === payload.name && existing.phone === payload.phone) {
+    if (existing) { 
+      if (existing.first_name === payload.first_name && existing.phone === payload.phone) {
         throw new ApiError(
           httpStatus.BAD_REQUEST,
           'Member with same name and phone already exists in this gym'
         );
-      } else if (existing.name === payload.name) {
+      } else if (existing.first_name === payload.first_name) {
         throw new ApiError(
           httpStatus.BAD_REQUEST,
           'Member with the same name already exists in this gym'
@@ -36,7 +36,8 @@ export class MemberService {
     payload.gym = gym._id;
 
     const member = await Member.create({
-      name: payload.name,
+      first_name: payload.first_name,
+      last_name: payload.last_name || null,
       phone: payload.phone,
       nickname: payload.nickname || null,
       referred_by: payload.referred_by || null,

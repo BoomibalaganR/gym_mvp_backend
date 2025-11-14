@@ -1,16 +1,15 @@
-import { FileUpload, StorageService, createStorage } from '../../../services/storage.service';
-
+import { FileUpload } from '../../../services/storage/providers/storage.provider.interface';
 import bcrypt from 'bcryptjs';
+import {createStorageService} from '../../../services/storage'
 import crypto from "crypto";
 import mongoose from 'mongoose';
 
 const MemberSchema = new mongoose.Schema({
   gym: { type: mongoose.Schema.Types.ObjectId, ref: 'Gym', required: true },
-  name: { type: String, required: true },
   first_name: { type: String, required: true },
-  last_name: { type: String, required: true },
-  phone: { type: String, required: true },
-  email: { type: String},
+  last_name: { type: String, required: false },
+  phone: { type: String, required: true, unique: true , sparse: true},
+  email: { type: String, sparse: true},
   nickname: { type: String },
   profilepic_content_type: { type: String },
   profilepic_hash: { type: String, default: null },
@@ -19,6 +18,8 @@ const MemberSchema = new mongoose.Schema({
   ref: 'Member',
   default: null,
 },
+otp: { type: String, select: false },
+  otp_expiry: { type: Date },
   address: { type: String },
   working_status: { type: String},
   session: { type: String },
@@ -31,7 +32,12 @@ const MemberSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 // Unique per gym on phone
-MemberSchema.index({ gym_id: 1, phone: 1, email: 1 });
+MemberSchema.index({ gym_id: 1, phone: 1});
+
+MemberSchema.methods.getFullName = function () {
+  return [this.first_name, this.last_name].filter(Boolean).join(' ');
+};
+
 
 MemberSchema.methods.isPasswordMatch = async function (password) {
     return await bcrypt.compare(password, this.password)
@@ -42,7 +48,7 @@ MemberSchema.methods.getProfilePicStorageKey = function (): string {
 };
 
 MemberSchema.methods.uploadProfilePic = async function (file: FileUpload) {
-  const storage = createStorage();
+  const storage = createStorageService();
   const filePath = this.getProfilePicStorageKey();
 
   // Upload file to Firebase/S3
@@ -64,7 +70,7 @@ MemberSchema.methods.uploadProfilePic = async function (file: FileUpload) {
 };
 
 MemberSchema.methods.deleteProfilePic = async function () {
-  const storage = createStorage();
+  const storage = createStorageService();
   const filePath = this.getProfilePicStorageKey();
 
   if (filePath) {
@@ -81,7 +87,7 @@ MemberSchema.methods.deleteProfilePic = async function () {
 MemberSchema.methods.getSignedProfilePicUrl = async function (): Promise<string> {
   if (!this.profilepic_content_type || !this.profilepic_hash) return '';
 
-  const storage = createStorage();
+  const storage = createStorageService();
 
   const extraParams = this.profilepic_content_type
     ? { ResponseContentType: this.profilepic_content_type }

@@ -2,11 +2,17 @@ import Joi from 'joi';
 
 export const createMemberSchema = {
   body: Joi.object({
-    name: Joi.string().trim().min(2).max(50).required().messages({
-      'string.empty': 'Member name is required',
-      'string.min': 'Member name must be at least 2 characters',
-      'string.max': 'Member name must be at most 50 characters',
-      'any.required': 'Member name is required'
+    first_name: Joi.string().trim().min(2).max(50).required().messages({
+      'string.empty': 'Member first_name is required',
+      'string.min': 'Member first_name must be at least 2 characters',
+      'string.max': 'Member first_name must be at most 50 characters',
+      'any.required': 'Member first_name is required'
+    }), 
+    last_name: Joi.string().trim().min(2).max(50).messages({
+      'string.empty': 'Member first_name is required',
+      'string.min': 'Member first_name must be at least 2 characters',
+      'string.max': 'Member first_name must be at most 50 characters',
+      'any.required': 'Member first_name is required'
     }),
     phone: Joi.string().pattern(/^\d{10}$/).required().messages({
       'string.empty': 'Member phone number is required',
@@ -57,11 +63,17 @@ export const createMemberSchema = {
 
 export const updateMemberSchema = {
   body: Joi.object({
-    name: Joi.string().trim().min(2).max(50).messages({
-      'string.empty': 'Member name is required',
-      'string.min': 'Member name must be at least 2 characters',
-      'string.max': 'Member name must be at most 50 characters',
-      'any.required': 'Member name is required'
+    first_name: Joi.string().trim().min(2).max(50).messages({
+      'string.empty': 'Member first_name is required',
+      'string.min': 'Member first_name must be at least 2 characters',
+      'string.max': 'Member first_name must be at most 50 characters',
+      'any.required': 'Member first_name is required'
+    }),
+    last_name: Joi.string().trim().min(2).max(50).messages({
+      'string.empty': 'Member last_name is required',
+      'string.min': 'Member last_name must be at least 2 characters',
+      'string.max': 'Member last_name must be at most 50 characters',
+      'any.required': 'Member last_name is required'
     }),
     nickname: Joi.string().trim().max(30).optional().allow(null, '').messages({
       'string.max': 'Nick name must be at most 30 characters'
