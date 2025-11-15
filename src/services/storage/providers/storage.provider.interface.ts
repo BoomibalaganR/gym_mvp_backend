@@ -7,5 +7,6 @@ export interface FileUpload {
 export interface StorageProvider {
   upload(file: FileUpload, destination: string): Promise<string>;
   getSignedUrl(filePath: string, expiresInMs?: number, extraParams?: Record<string, any>): Promise<string>;
-  delete(filePath: string): Promise<void>;
+  delete(filePath: string): Promise<void>; 
+  getPublicUrl(filePath: string): string;
 }

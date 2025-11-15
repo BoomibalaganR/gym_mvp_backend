@@ -21,5 +21,9 @@ export class LocalStorageProvider implements StorageProvider {
 
   async delete(filePath: string): Promise<void> {
     await fs.promises.unlink(path.join(this.baseDir, filePath)).catch(() => {});
+  } 
+
+  getPublicUrl(filePath: string): string {
+      return `/uploads/${path.basename(filePath)}`
   }
 }

@@ -20,6 +20,9 @@ export class StorageService {
 
   async getSignedUrl(filePath: string, expiresInMs?: number, extraParams?: Record<string, any>) {
     return this.provider.getSignedUrl(filePath, expiresInMs, extraParams);
+  } 
+getPublicUrl(filePath: string) {
+    return this.provider.getPublicUrl(filePath);
   }
 
   async delete(filePath: string) {

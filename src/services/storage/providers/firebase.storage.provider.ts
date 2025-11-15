@@ -43,5 +43,9 @@ export class FirebaseStorageProvider implements StorageProvider {
   async delete(filePath: string): Promise<void> {
     const bucket = this.storage.bucket(this.bucketName);
     await bucket.file(filePath).delete();
+  } 
+  
+  getPublicUrl(filePath: string): string { 
+    return `https://storage.googleapis.com/${this.bucketName}/${filePath}`;
   }
 }
