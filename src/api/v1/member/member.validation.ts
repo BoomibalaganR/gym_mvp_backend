@@ -8,11 +8,11 @@ export const createMemberSchema = {
       'string.max': 'Member first_name must be at most 50 characters',
       'any.required': 'Member first_name is required'
     }), 
-    last_name: Joi.string().trim().min(2).max(50).messages({
+    last_name: Joi.string().trim().min(1).max(50).messages({
       'string.empty': 'Member first_name is required',
-      'string.min': 'Member first_name must be at least 2 characters',
-      'string.max': 'Member first_name must be at most 50 characters',
-      'any.required': 'Member first_name is required'
+      'string.min': 'Member last_name must be at least 2 characters',
+      'string.max': 'Member last_name must be at most 50 characters',
+      'any.required': 'Member last_name is required'
     }),
     phone: Joi.string().pattern(/^\d{10}$/).required().messages({
       'string.empty': 'Member phone number is required',
