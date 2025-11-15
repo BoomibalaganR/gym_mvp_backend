@@ -84,7 +84,7 @@ MemberSchema.methods.deleteProfilePic = async function () {
 };
 
 
-MemberSchema.methods.getSignedProfilePicUrl = async function (): Promise<string> {
+MemberSchema.methods.getProfilePicSignedUrl = async function (): Promise<string> {
   if (!this.profilepic_content_type || !this.profilepic_hash) return '';
 
   const storage = createStorageService();
