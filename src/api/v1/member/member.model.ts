@@ -98,12 +98,20 @@ MemberSchema.methods.getSignedProfilePicUrl = async function (): Promise<string>
     undefined,
     extraParams
   );
+}; 
+
+MemberSchema.methods.getprofilePicPublicUrl = function (): string{
+  if (!this.profilepic_content_type || !this.profilepic_hash) return '';
+
+  const storage = createStorageService();
+
+  return storage.getPublicUrl(this.getProfilePicStorageKey())+`?v=${this.profilepic_hash}`;
 };
 
 MemberSchema.methods.getProfilePicProxyUrl = function (): string {
   if (!this.profilepic_content_type || !this.profilepic_hash) return '';
 
-  return `/api/v1/profile-pic/${this._id}?h=${this.profilepic_hash}`;
+  return `/api/v1/members/${this._id}/profile-pic/?h=${this.profilepic_hash}`;
 };
 
 
