@@ -12,7 +12,7 @@ export const config = {
   smtpUser: process.env.SMTP_USER || '',
   smtpPass: process.env.SMTP_PASS || '',
   appEmail: process.env.APP_EMAIL || 'no-reply@example.com',
-
+    node_env: process.env.NODE_ENV,
    project_id: process.env.FIREBASE_PROJECT_ID,
     bucket_name:process.env.FIREBASE_BUCKET_NAME,
     key_file: path.resolve(process.cwd(), 'serviceAccountKey.json'),
