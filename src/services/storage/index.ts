@@ -3,10 +3,11 @@ import { LocalStorageProvider } from './providers/local.storage.provider';
 import { StorageProvider } from './providers/storage.provider.interface';
 // services/storage/index.ts
 import { StorageService } from './storage.service';
+import { config } from '../../config/env';
 
 export const createStorageService = (): StorageService => {
   const Provider: new () => StorageProvider =
-    process.env.NODE_ENV === 'production'
+    config.node_env === 'production'
       ? FirebaseStorageProvider
       : LocalStorageProvider;
 
