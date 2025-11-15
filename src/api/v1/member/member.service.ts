@@ -64,12 +64,13 @@ export class MemberService {
   }
 
   private async sanitizeMember(member: any, fields?: string[]) {
-      const profileUrl = member.getProfilePicUrl ? await member.getProfilePicUrl() : '';
+      const profileUrl = await member.getProfilePicSignedUrl();
 
       // Base full object
       const full: any = {
           id: member._id?.toString() || null,
-          name: member.name || '',
+          first_name: member.first_name || '',
+          last_name: member.last_name || '',
           nickname: member.nickname || '',
           phone: member.phone || '',
           email: member.email || '',
@@ -115,7 +116,7 @@ export class MemberService {
       const selectedFields = q.fields ? q.fields.split(',') : [];
 
       const filter: any = { gym: gym, is_admin: false };
-      console.log('Filter before applying search/status:', filter, status === 'active', search);
+      
       if (status) filter.is_active = status === 'active';
       if (search) filter.$or = [
           { name: { $regex: search, $options: 'i' } },
@@ -126,7 +127,7 @@ export class MemberService {
       const total = await Member.countDocuments(filter);
 
       // Populate referred_by if needed
-      const needRef = selectedFields.some(f => f.startsWith('referred_by'));
+      const needRef = selectedFields.some((f: any) => f.startsWith('referred_by'));
       let query = Member.find(filter)
           .skip(skip)
           .limit(limit)
@@ -141,7 +142,7 @@ export class MemberService {
           members.map(member => this.sanitizeMember(member, selectedFields))
       );
 
-      return { total, page, limit, data };
+      return { total, page, limit, members: data };
   }
 
   async get(gym: any, user: any, memberId: string, q: any) {
@@ -185,26 +186,20 @@ export class MemberService {
       return sanitized;
   }
   
-  async getProfilePicUrl(gymId: string, user: any, memberId: string, query: any) {
+ async getProfilePicUrl(gymId: string, user: any, memberId: string) {
 
-    const member = await Member.findOne({
-      _id: memberId,
-      gym: gymId
-    }).select("profilepic_hash profilepic_content_type").lean();
+  const member = await Member.findOne({
+    _id: memberId,
+    gym: gymId
+  }).select("profilepic_hash profilepic_content_type");
 
-    if (!member || !member.profilepic_hash) {
-      throw new ApiError(httpStatus.NOT_FOUND, "Profile picture not found");
-    }
-
-    const clientHash = query.h;
-
-    // Tell frontend to refresh cache if hash mismatch
-    if (clientHash !== member.profilepic_hash) {
-      throw new ApiError(httpStatus.NOT_MODIFIED, "Profile picture not modified");
-    }
-
-    return member.getSignedProfilePicUrl();
+  if (!member || !member.profilepic_hash) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Profile picture not found");
   }
+
+  // Always return signed URL
+  return await member.getSignedProfilePicUrl();
+}
 
 
   async uploadProfilePic(gym: any, user: any, memberId: string, file: FileUpload) {
@@ -215,7 +210,7 @@ export class MemberService {
       if (!file) throw new ApiError(httpStatus.BAD_REQUEST, 'No file uploaded');
       try {
           
-          return { 'id': member.id.toString(), profileUrl: await member.uploadProfilePic(file) };
+          await member.uploadProfilePic(file) 
           } catch (error) {
               console.error('Error uploading profile picture:', error);
               throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Error uploading profile picture');
