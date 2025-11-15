@@ -33,9 +33,6 @@ export default class ApiResponse<T = any> {
     return new ApiResponse(true, httpStatus.CREATED, message, data).send(res);
   }  
 
-  static redirect(res: Response, url: string) {
-    return res.redirect(httpStatus.TEMPORARY_REDIRECT, url);
-  }
 
   static error(res: Response, statusCode: number, message: string, details?: any) {
     return new ApiResponse(false, statusCode, message, null, null, details).send(res);
