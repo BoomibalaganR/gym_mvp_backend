@@ -25,8 +25,7 @@ export class MemberController {
   });
 
   getProfilePic = catchAsync(async (req: any, res: any) => {
-    const signedUrl = await MemberService.getProfilePicUrl(req.gym, req.user, req.params.id, req.query);
-
+    const signedUrl = await MemberService.getProfilePicUrl(req.gym, req.user, req.params.id);
     return ApiResponse.success(res, 'Profile picture URL fetched', { url: signedUrl });
 
   });
