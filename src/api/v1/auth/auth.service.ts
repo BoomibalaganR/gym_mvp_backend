@@ -127,7 +127,7 @@ export class AuthService {
     };
 
    return jwt.sign(payload, config.jwtSecret, {
-        expiresIn: loginType === 'phone' ? '30d' : config.jwtExpiresIn,
+        expiresIn: config.jwtExpiresIn,
     });
 
   }
