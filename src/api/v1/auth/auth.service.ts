@@ -28,7 +28,7 @@ export class AuthService {
             { new: true }
         );
 
-        if (!member) throw new Error('Member not found. Contact support to onboard.');
+        if (!member) throw new ApiError(httpStatus.BAD_REQUEST, 'Member not found. Contact support to onboard.');
 
         await this.NotificationService.send({
             sms: {
