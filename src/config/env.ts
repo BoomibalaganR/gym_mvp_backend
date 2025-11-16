@@ -6,7 +6,7 @@ export const config = {
   port: Number(process.env.PORT),
   mongoUri: process.env.MONGO_URI || 'mongodb://localhost:27017/gym_mvp',
   jwtSecret: process.env.JWT_SECRET || 'change_this_secure_value',
-  jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
+  jwtExpiresIn: process.env.JWT_EXPIRES_IN,
   smtpHost: process.env.SMTP_HOST || '',
   smtpPort: Number(process.env.SMTP_PORT || 587),
   smtpUser: process.env.SMTP_USER || '',
