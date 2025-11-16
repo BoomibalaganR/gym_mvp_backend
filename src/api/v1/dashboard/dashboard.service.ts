@@ -50,9 +50,9 @@ async getDashboardSummary(gym: any, user: any, query: any) {
     activeMembers,
     totalCollected,
     totalPending,
-    totalUnpaidMembers,
+    unpaidCount: totalUnpaidMembers,
     totalPaidMembers: paidMemberCount,
-    pendingMembers: pendingMemberCount,
+    pendingCount: pendingMemberCount,
   };
 }
 
