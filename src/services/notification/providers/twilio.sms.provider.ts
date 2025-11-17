@@ -1,6 +1,7 @@
 import { BaseProvider } from "./base.provider";
 import { SmsPayload } from "../interfaces/payload.interface";
 import { SmsTemplates } from "../templates/sms.template";
+import { config } from "../../../config/env";
 import twilio from "twilio";
 
 export class TwilioSmsProvider extends BaseProvider<SmsPayload, SmsPayload & { message: string }> {
@@ -9,16 +10,17 @@ export class TwilioSmsProvider extends BaseProvider<SmsPayload, SmsPayload & { m
 
   constructor() {
     super()
-    this.client = twilio(process.env.TWILIO_SID, process.env.TWILIO_TOKEN);
+    this.client = twilio(config.twilioAccountSid, config.twilioAuthToken);
   }
 
   async send(payload: SmsPayload): Promise<void> {
 
     const rendered = this.render(payload);
     await this.client.messages.create({
-      from: process.env.TWILIO_PHONE_NUMBER,
+      from: config.twilioPhoneNumber,
       to: rendered.to,
       body: rendered.message,
-    });
+    }); 
+    console.log(`SMS sent to ${rendered.to}`);
   }
 }
