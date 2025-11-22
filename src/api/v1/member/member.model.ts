@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import {createStorageService} from '../../../services/storage'
 import crypto from "crypto";
 import mongoose from 'mongoose';
+import { optimizeImage } from '../../../utils/image.util';
 
 const MemberSchema = new mongoose.Schema({
   gym: { type: mongoose.Schema.Types.ObjectId, ref: 'Gym', required: true },
@@ -42,30 +43,49 @@ MemberSchema.methods.getFullName = function () {
 MemberSchema.methods.isPasswordMatch = async function (password) {
     return await bcrypt.compare(password, this.password)
 }
-
 MemberSchema.methods.getProfilePicStorageKey = function (): string {
-  return `member-${this._id}/profilepic`;
+  return `member-${this._id}/profilepic.webp`;
 };
 
 MemberSchema.methods.uploadProfilePic = async function (file: FileUpload) {
   const storage = createStorageService();
   const filePath = this.getProfilePicStorageKey();
+  const beforeSizeKB = (file.buffer.length / 1024).toFixed(2);
+  console.log("📸 Before compression:", beforeSizeKB, "KB");
 
-  // Upload file to Firebase/S3
-  await storage.upload(file, filePath, {
-    ResponseContentType: file.mimetype,
+
+  // 1. Optimize + convert to WEBP (sharp util)
+  const optimizedBuffer = await optimizeImage(file.buffer, {
+    width: 600,
+    height: 600,
+    quality: 85,
   });
 
-  // Save metadata
-  this.profilepic_content_type = file.mimetype;
+  const optimizedFile: FileUpload = {
+    buffer: optimizedBuffer,
+    mimetype: "image/webp",    // Always store as webp
+    filename: file.filename,
+    size: optimizedBuffer.length,
+  };
+   const afterSizeKB = (optimizedBuffer.length / 1024).toFixed(2);
+  console.log("🎯 After compression:", afterSizeKB, "KB");
 
-  // New UUID → forces client to refresh cache
+
+  // 2. Upload optimized file to S3
+  await storage.upload(optimizedFile, filePath, {
+    ResponseContentType: "image/webp",
+  });
+
+  // 3. Update metadata in DB
+  this.profilepic_content_type = "image/webp";
+
+  // Hash changes → client refreshes cached profile pic
   this.profilepic_hash = crypto.randomUUID();
 
   await this.save();
 
   return {
-    hash: this.profilepic_hash
+    hash: this.profilepic_hash,
   };
 };
 

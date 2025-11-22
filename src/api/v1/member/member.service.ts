@@ -86,7 +86,9 @@ export class MemberService {
                   name: member.referred_by.name || '',
                 }
               : {},
-          profileUrl,
+          profilePicUrl:profileUrl, 
+        profileHash: member.profilepic_hash || null, 
+        unpaidMonths: member.unpaid_months || [],
       };
 
       if (!fields || fields.length === 0) return full;
