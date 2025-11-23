@@ -1,5 +1,5 @@
 import httpStatus from 'http-status';
-import { FileUpload } from '../../../services/storage.service';
+import { FileUpload } from '../../../services/storage/providers/storage.provider.interface';
 import ApiError from '../../../utils/ApiError';
 import paginate from '../../../utils/paginate';
 import Member from './member.model';
