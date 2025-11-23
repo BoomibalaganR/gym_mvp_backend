@@ -1,8 +1,8 @@
-import { FileUpload } from '../../../services/storage/providers/storage.provider.interface';
 import bcrypt from 'bcryptjs';
-import {createStorageService} from '../../../services/storage'
 import crypto from "crypto";
 import mongoose from 'mongoose';
+import { createStorageService } from '../../../services/storage';
+import { FileUpload } from '../../../services/storage/providers/storage.provider.interface';
 import { optimizeImage } from '../../../utils/image.util';
 
 const MemberSchema = new mongoose.Schema({
@@ -12,8 +12,9 @@ const MemberSchema = new mongoose.Schema({
   phone: { type: String, required: true, unique: true , sparse: true},
   email: { type: String, sparse: true},
   nickname: { type: String },
+  gender: { type: String, enum: ['male', 'female', 'other'], default: 'other' },
   profilepic_content_type: { type: String },
-  profilepic_hash: { type: String, default: null },
+  profilepic_hash: { type: String, default: null }, 
   referred_by: {
   type: mongoose.Schema.Types.ObjectId,
   ref: 'Member',

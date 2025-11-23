@@ -41,6 +41,9 @@ export const createMemberSchema = {
     }),
     session: Joi.string().valid('morning', 'evening').optional().allow(null, '').messages({
       'any.only': 'Session must be either morning or evening'
+    }), 
+    gender: Joi.string().valid('male', 'female', 'other').optional().allow(null, '').messages({
+      'any.only': 'Gender must be either male, female, or other'
     }),
     branch: Joi.string().trim().max(50).optional().allow(null, '').messages({
       'string.max': 'Branch must be at most 50 characters'
@@ -57,7 +60,7 @@ export const createMemberSchema = {
         'Password must contain at least one letter and one number',
     }),
 
-  }).options({ abortEarly: true })
+  }).options({ stripUnknown: true, abortEarly: true })
 };
 
 
@@ -69,9 +72,9 @@ export const updateMemberSchema = {
       'string.max': 'Member first_name must be at most 50 characters',
       'any.required': 'Member first_name is required'
     }),
-    last_name: Joi.string().trim().min(2).max(50).messages({
+    last_name: Joi.string().trim().min(1).max(50).messages({
       'string.empty': 'Member last_name is required',
-      'string.min': 'Member last_name must be at least 2 characters',
+      'string.min': 'Member last_name must be at least 1 character',
       'string.max': 'Member last_name must be at most 50 characters',
       'any.required': 'Member last_name is required'
     }),
@@ -79,8 +82,9 @@ export const updateMemberSchema = {
       'string.max': 'Nick name must be at most 30 characters'
     }),
     referred_by: Joi.string()
+    .length(24) 
+    .allow(null, '')
     .hex()
-    .length(24)
     .optional()
     .messages({
         'string.base': '"referred_by" must be a string',
@@ -96,6 +100,9 @@ export const updateMemberSchema = {
     }),
     session: Joi.string().valid('morning', 'evening').optional().allow(null, '').messages({
       'any.only': 'Session must be either morning or evening'
+    }),
+    gender: Joi.string().valid('male', 'female', 'other').optional().allow(null, '').messages({
+      'any.only': 'Gender must be either male, female, or other'
     }),
     branch: Joi.string().trim().max(50).optional().allow(null, '').messages({
       'string.max': 'Branch must be at most 50 characters'

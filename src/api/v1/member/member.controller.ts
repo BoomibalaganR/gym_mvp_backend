@@ -1,6 +1,6 @@
 import ApiResponse from '../../../utils/ApiResponse';
-import MemberService from './member.service';
 import catchAsync from '../../../utils/catchAsync';
+import MemberService from './member.service';
 
 export class MemberController {
     
