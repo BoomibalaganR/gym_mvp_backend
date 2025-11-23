@@ -1,10 +1,10 @@
 import { createMemberSchema, updateMemberSchema } from './member.validation';
 
-import MemberController from './member.controller';
 import { Router } from 'express';
 import authenticateUser from '../../../middlewares/auth.middleware';
 import authorize from '../../../middlewares/role.middleware';
 import validate from './../../../middlewares/validate.middleware';
+import MemberController from './member.controller';
 
 const router = Router();
 
@@ -12,7 +12,15 @@ router.post('/', authenticateUser, authorize('owner', 'collector'), validate(cre
 router.get('/', authenticateUser, authorize('owner', 'collector'), MemberController.list);
 
 router.get('/:id', authenticateUser, authorize('owner'), MemberController.get);
-router.put('/:id', authenticateUser, authorize('owner'), validate(updateMemberSchema), MemberController.update);
+router.put('/:id', authenticateUser, authorize('owner'), validate(updateMemberSchema), MemberController.update); 
+// routes/memberRoutes.js
+router.post(
+  '/batch',
+  authenticateUser,
+//   upload.single('csvFile'), // Expecting a CSV file
+//   validate(batchMemberValidation),
+  MemberController.batchCreate
+);
 router.delete('/:id', authenticateUser, authorize('owner'), MemberController.deactivate);
 router.patch('/bot-access', authenticateUser, authorize('owner'), MemberController.setBotAccess);
 

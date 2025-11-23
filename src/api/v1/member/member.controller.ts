@@ -1,9 +1,15 @@
 import ApiResponse from '../../../utils/ApiResponse';
 import catchAsync from '../../../utils/catchAsync';
+import CSVMemberService from './member.csv.service';
 import MemberService from './member.service';
 
 export class MemberController {
-    
+ // controllers/memberController.js
+   batchCreate = catchAsync(async (req: any, res: any) => {
+    const result = await CSVMemberService.batchCreate(req.gym, req.user, req.file, req.body);
+    return ApiResponse.created(res, 'Members batch created successfully', result);
+    });
+
   create = catchAsync(async (req: any, res: any) => {
     const member = await MemberService.create(req.gym, req.user, req.file, req.body);
     return ApiResponse.created(res, 'Member created', member);
