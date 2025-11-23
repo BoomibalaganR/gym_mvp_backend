@@ -1,9 +1,8 @@
-import ApiError from '../../../utils/ApiError';
+import httpStatus from 'http-status';
 import { FileUpload } from '../../../services/storage.service';
-import Member from './member.model';
-import bcrypt from 'bcryptjs';
-import httpStatus  from 'http-status';
+import ApiError from '../../../utils/ApiError';
 import paginate from '../../../utils/paginate';
+import Member from './member.model';
 
 export class MemberService {
 
@@ -77,15 +76,22 @@ export class MemberService {
           is_active: member.is_active,
           working_status: member.working_status || '',
           session: member.session || '',
+          gender: member.gender || '',
+          branch: member.branch || '',
           address: member.address || '',
-          createdAt: member.createdAt || null,
-          updatedAt: member.updatedAt || null,
+          joining_date: member.createdAt || null,
+          updated_at: member.updatedAt || null,
           referred_by: member.referred_by
               ? {
                   id: member.referred_by._id?.toString() || null,
-                  name: member.referred_by.name || '',
+                  first_name: member.referred_by.first_name || '', 
+                  last_name: member.referred_by.last_name || '',
+                  phone: member.referred_by.phone || '',
+                  nickname: member.referred_by.nickname || '', 
+                  profilePicUrl: await member.referred_by.getProfilePicSignedUrl(),
+                  profileHash: member.referred_by.profilepic_hash || null,
                 }
-              : {},
+              : null,
           profilePicUrl:profileUrl, 
         profileHash: member.profilepic_hash || null, 
         unpaidMonths: member.unpaid_months || [],
@@ -121,13 +127,14 @@ export class MemberService {
       
       if (status) filter.is_active = status === 'active';
       if (search) filter.$or = [
-          { name: { $regex: search, $options: 'i' } },
+          { first_name: { $regex: search, $options: 'i' } },
+          {last_name: {$regex: search, $options: 'i'}},
           { phone: { $regex: search, $options: 'i' } },
           { nickname: { $regex: search, $options: 'i' } },
       ];
 
       const total = await Member.countDocuments(filter);
-
+      console.log('query:', q.search)
       // Populate referred_by if needed
       const needRef = selectedFields.some((f: any) => f.startsWith('referred_by'));
       let query = Member.find(filter)
@@ -152,7 +159,7 @@ export class MemberService {
       let query = Member.findOne({ _id: memberId, gym: gym._id }).select('-password');
 
       // if (selectedFields.some(f => f.startsWith('referred_by'))) {
-      query = query.populate('referred_by', 'name');
+      query = query.populate('referred_by', 'first_name last_name nickname phone profilepic_hash profilepic_content_type');
       // }
 
       const member = await query;
@@ -163,7 +170,8 @@ export class MemberService {
   
   async update(gym: any, user: any, memberId: string, payload: any) {
       // Only allow certain fields to be updated
-      const allowedFields = ['name', 'nickname', 'email', 'address', 'working_status', 'session', 'branch', 'is_active'];
+      const allowedFields = ['first_name', 'last_name', 'nickname', 'email', 'address', 'working_status', 'session', 'branch', 'is_active', 'referred_by', 'phone', 'gender']; 
+      console.log("Update payload:", payload);
       const updateData: any = {};
       for (const key of allowedFields) {
           if (payload[key] !== undefined) updateData[key] = payload[key];
@@ -177,7 +185,8 @@ export class MemberService {
       
       const sanitized = {
           id: updated._id.toString(),
-          name: updated.name,
+          first_name: updated.first_name,
+          last_name: updated.last_name,
           nickname: updated.nickname,
           phone: updated.phone,
           email: updated.email,
