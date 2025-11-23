@@ -1,5 +1,5 @@
-import Joi, { ObjectSchema } from 'joi';
 import { NextFunction, Request, Response } from 'express';
+import Joi, { ObjectSchema } from 'joi';
 
 import ApiError from '../utils/ApiError';
 
