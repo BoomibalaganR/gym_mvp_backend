@@ -1,21 +1,40 @@
 import Fee from '../fee/fee.model';
 import Member from '../member/member.model';
-import { format } from 'date-fns';
+function getMonthRange(ym) {
+  const [year, month] = ym.split("-").map(Number);
+
+  return {
+    start: new Date(year, month, 1)
+  };
+}
+function getFinalMonthRange(queryMonth) {
+  if (queryMonth) {
+    // Custom month from query
+    return getMonthRange(queryMonth);
+  }
+
+  // Current month range
+  const now = new Date();
+  return {
+    start: new Date(Date.UTC(now.getFullYear(), now.getMonth(), 1))
+  };
+}
 
 export class DashboardService {
 
  // ✅ Dashboard Summary
-async getDashboardSummary(gym: any, user: any, query: any) {
-  const month = query.month || format(new Date(), "yyyy-MM");
+async getDashboardSummary(gym: any, user: any, query: any) { 
+    const {month} = query
+    const { start: monthStart } = getFinalMonthRange(month);
 
   // 🧮 Step 1: Member counts
   const [totalMembers, activeMembers] = await Promise.all([
     Member.countDocuments({ gym: gym._id , is_admin: { $ne: true } }),
     Member.countDocuments({ gym: gym._id, is_admin: { $ne: true }, is_active: true }),
   ]);
-
   // 🧮 Step 2: Fetch fees of the month
-  const fees = await Fee.find({ gym: gym._id, month });
+  const fees = await Fee.find({ gym: gym._id,  
+  month: { $gte: monthStart} });
 
   let totalCollected = 0;
   let totalPending = 0;
@@ -45,7 +64,7 @@ async getDashboardSummary(gym: any, user: any, query: any) {
 
   // 🎯 Step 4: Return summary
   return {
-    month,
+    month: monthStart,
     totalMembers,
     activeMembers,
     totalCollected,
