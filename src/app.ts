@@ -1,13 +1,13 @@
-import authRoutes from './api/v1/auth/auth.route';
 import cors from 'cors';
-import dashboardReoutes from './api/v1/dashboard/dashboard.route';
-import errorHandler from './middlewares/error.middleware';
 import express from 'express';
+import morgan from 'morgan';
+import multer from 'multer';
+import authRoutes from './api/v1/auth/auth.route';
+import dashboardReoutes from './api/v1/dashboard/dashboard.route';
 import feeRoutes from './api/v1/fee/fee.route';
 import gymRoutes from './api/v1/gym/gym.route';
 import memberRoutes from './api/v1/member/member.route';
-import morgan from 'morgan';
-import multer from 'multer';
+import errorHandler from './middlewares/error.middleware';
 
 // store file in memory as buffer (needed for Firebase/S3)
 const storage = multer.memoryStorage();
