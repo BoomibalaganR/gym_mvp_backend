@@ -4,7 +4,8 @@ const FeeSchema = new mongoose.Schema(
   {
     gym: { type: mongoose.Schema.Types.ObjectId, ref: "Gym", required: true },
     member: { type: mongoose.Schema.Types.ObjectId, ref: "Member", required: true },
-    month: { type: Date, required: true }, // 'YYYY-MM-DD'
+    month: { type: Date, required: true }, // 'YYYY-MM-DD' 
+    totalAmount:{type: Number, required: true},
     paidAmount: { type: Number, required: true },
     pendingAmount: { type: Number, required: true },
     paymentStatus: { type: String, enum: ["paid", "pending"], default: "pending" },

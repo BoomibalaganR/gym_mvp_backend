@@ -1,6 +1,7 @@
 import { endOfMonth, format, parseISO, startOfMonth, subMonths } from 'date-fns';
 
 import ApiError from '../../../utils/ApiError';
+import { getMonthRange } from '../../../utils/date.util';
 import Member from '../member/member.model';
 import Fee from './fee.model';
 
@@ -43,14 +44,15 @@ export class FeeService {
     let paidAmount = 0;
     let pendingAmount = gymMonthlyFee;
     let paymentStatus: "paid" | "pending" = "pending";
-
+    
+    
     // Logic: Deduct fee for each month from remainingAmount
-    if (remainingAmount >= gymMonthlyFee) {
+    if (remainingAmount >= gymMonthlyFee) { 
       paidAmount = gymMonthlyFee;
       pendingAmount = 0;
       paymentStatus = "paid";
       remainingAmount -= gymMonthlyFee;
-    } else if (remainingAmount > 0) {
+    } else if (remainingAmount > 0) { 
       paidAmount = remainingAmount;
       pendingAmount = gymMonthlyFee - remainingAmount;
       remainingAmount = 0;
@@ -60,7 +62,8 @@ export class FeeService {
     newFeeRecords.push({
       gym: gym._id,
       member: member._id,
-      month: monthDate,
+      month: monthDate, 
+      totalAmount: gymMonthlyFee,
       paidAmount,
       pendingAmount,
       paymentStatus,
@@ -89,28 +92,45 @@ export class FeeService {
   };
 }
 
-async getUnpaidMonth(memberId: string) {
+
+async getMemberMonthStatus(memberId: string) {
+  // -----------------------------
   // 1. Get member
+  // -----------------------------
   const member = await Member.findOne({ _id: memberId }).select("+createdAt");
   if (!member) throw new ApiError(404, "Member not found");
 
-  // Normalize member.createdAt to first day of that month
+  // Normalize signup month (UTC safe)
   const created = new Date(member.createdAt);
-  const startYear = created.getFullYear();
-  const startMonth = created.getMonth(); // 0–11
+  const startYear = created.getUTCFullYear();
+  const startMonth = created.getUTCMonth(); // 0-11
 
-  // 2. Fetch all paid months (Date objects)
-  const paidFees = await Fee.find({ member: memberId }).select("month");
+  // -----------------------------
+  // 2. Get all fee records for this member
+  // -----------------------------
+  const fees = await Fee.find({ member: memberId })
+    .select("month pendingAmount");
 
-  // Convert them into "YYYY-MM" strings
-  const paidMonths = new Set(
-    paidFees.map(f => format(new Date(f.month), "yyyy-MM"))
-  );
+  // Normalize fee.month to "YYYY-MM"
+  const paidMonths = new Set<string>();
+  const pendingMonths = new Set<string>();
 
+  for (const f of fees) {
+    const monthStr = format(new Date(f.month), "yyyy-MM");
+
+    if (Number(f.pendingAmount) > 0) {
+      pendingMonths.add(monthStr); // Partially paid
+    } else {
+      paidMonths.add(monthStr);    // Fully paid
+    }
+  }
+
+  // -----------------------------
   // 3. Generate all months from createdAt → today
+  // -----------------------------
   const today = new Date();
-  const currentYear = today.getFullYear();
-  const currentMonth = today.getMonth();
+  const currentYear = today.getUTCFullYear();
+  const currentMonth = today.getUTCMonth();
 
   const allMonths: string[] = [];
 
@@ -121,7 +141,6 @@ async getUnpaidMonth(memberId: string) {
     const monthStr = `${y}-${String(m + 1).padStart(2, "0")}`;
     allMonths.push(monthStr);
 
-    // increment month
     m++;
     if (m > 11) {
       m = 0;
@@ -129,85 +148,139 @@ async getUnpaidMonth(memberId: string) {
     }
   }
 
-  // 4. Filter out paid months
-  const unpaidMonths = allMonths.filter(month => !paidMonths.has(month));
-  
+  // -----------------------------
+  // 4. Compute unpaid months
+  // -----------------------------
+  const unpaidMonths: string[] = [];
+
+  for (const month of allMonths) {
+    if (!paidMonths.has(month) && !pendingMonths.has(month)) {
+      unpaidMonths.push(month);
+    }
+  }
+
   return {
     memberId,
     createdAt: created,
-    paidMonths: Array.from(paidMonths),
-    unpaidMonths: Array.from(unpaidMonths)
+
+    paidMonths: Array.from(paidMonths).sort(),
+    pendingMonths: Array.from(pendingMonths).sort(),
+    unpaidMonths: unpaidMonths.sort()
   };
 }
 
 
 async getFeesByDateRange(gym: any, user: any, query: any) {
-  const { start, end, verifiedByOwner, paymentType, paymentStatus, memberId, months } = query;
+  const {
+    start,
+    end,
+    verifiedByOwner,
+    paymentType,
+    paymentStatus,
+    memberId,
+    limit,
+    month
+  } = query;
 
   const filter: any = { gym: gym._id };
 
-  // Member filter
-  if (memberId) filter.member = memberId;
+  // --------------------------
+  // 🔹 1. MEMBER FILTER
+  // --------------------------
+  if (memberId) {
+    filter.member = memberId;
+  }
 
-  // Verified / Payment filters
-  if (verifiedByOwner !== undefined) filter.verifiedByOwner = verifiedByOwner === "true" || verifiedByOwner === true;
+  // --------------------------
+  // 🔹 2. VERIFIED / PAYMENT FILTER
+  // --------------------------
+  if (verifiedByOwner !== undefined)
+    filter.verifiedByOwner =
+      verifiedByOwner === "true" || verifiedByOwner === true;
+
   if (paymentType) filter.paymentType = paymentType;
   if (paymentStatus) filter.paymentStatus = paymentStatus;
 
-  // Date filter
-  let limit: number | undefined;
-  if (months && memberId) {
-    // Last N paid months for the member
-    limit = Number(months);
-    if (isNaN(limit) || limit <= 0) throw new ApiError(400, "Invalid months value");
-  } else {
-    // Start / end date range
-    if (!start || !end) throw new ApiError(400, "start and end dates required");
-    const startDate = startOfMonth(parseISO(start));
-    const endDate = endOfMonth(parseISO(end));
-    filter.dateOfPayment = { $gte: startDate, $lte: endDate };
+  // --------------------------
+  // 🔹 3. DATE FILTER LOGIC
+  // --------------------------
+  let queryLimit: number | undefined;
+
+  // Case A: Limit last N months
+  if (limit) {
+    queryLimit = Number(limit);
+    if (isNaN(queryLimit) || queryLimit <= 0)
+      throw new ApiError(400, "Invalid limit value");
   }
 
-  // Build query
+  // Case B: Month range for a specific month (YYYY-MM)
+  else if (month) {
+    try {
+      const {start, end} = getMonthRange(month)
+      filter.month = { $gte: start, $lte: end };
+    } catch {
+      throw new ApiError(400, "Invalid month format — use YYYY-MM");
+    }
+  }
+
+  // Case C: Custom start + end range
+  else if (start && end) {
+    const startDate = startOfMonth(parseISO(start));
+    const endDate = endOfMonth(parseISO(end));
+    filter.month = { $gte: startDate, $lte: endDate };
+  }
+
+
+  // --------------------------
+  // 🔹 4. QUERY BUILD
+  // --------------------------
   let queryBuilder = Fee.find(filter)
     .populate([
-      { path: "member", select: "first_name last_name nickname phone" },
+      { path: "member", select: "first_name last_name nickname phone profilepic_hash profilepic_content_type" },
       { path: "collectedBy", select: "first_name last_name phone" }
-    ]);
+    ])
+    .sort({ month: -1 }); // latest month first
 
-  // Sorting
-  if (months && memberId) queryBuilder = queryBuilder.sort({ month: -1 }); // latest paid first
-  else queryBuilder = queryBuilder.sort({ dateOfPayment: 1 }); // owner view
-
-  // Limit if last N months
-  if (limit) queryBuilder = queryBuilder.limit(limit);
+  // Apply limit
+  if (queryLimit) queryBuilder = queryBuilder.limit(queryLimit);
 
   const fees = await queryBuilder;
 
-  // Map response with fullName
-  return {
-    count: fees.length,
-    data: fees.map(fee => ({
-      id: fee._id, 
-      month: fee.month,
-      totalAmount: gym.monthlyFee || 200,
-      paidAmount: fee.paidAmount,
-      pendingAmount: fee.pendingAmount,
-      paymentStatus: fee.paymentStatus,
-      paymentType: fee.paymentType,
-      verifiedByOwner: fee.verifiedByOwner,
-      member: fee.member
-        ? { id: fee.member.id, name: fee.member.getFullName(), phone: fee.member.phone }
-        : null,
-      dateOfPayment: fee.dateOfPayment,
-      collectedBy: fee.collectedBy
-        ? { id: fee.collectedBy.id, name: fee.collectedBy.getFullName()}
-        : null
-    }))
-  };
+  // --------------------------
+  // 🔹 5. RESPONSE
+  // --------------------------
+ const data = await Promise.all(
+  fees.map(async (fee) => ({
+    id: fee._id,
+    month: fee.month,
+    totalAmount: gym.monthlyFee || 200,
+    paidAmount: fee.paidAmount,
+    pendingAmount: fee.pendingAmount,
+    paymentStatus: fee.paymentStatus,
+    paymentType: fee.paymentType,
+    verifiedByOwner: fee.verifiedByOwner,
+
+    member: fee.member
+      ? {
+          id: fee.member.id,
+          name: fee.member.getFullName(),
+          phone: fee.member.phone,
+          profilePicUrl: await fee.member.getProfilePicSignedUrl(),
+          profileHash: fee.member.profilepic_hash || null
+        }
+      : null,
+
+    dateOfPayment: fee.dateOfPayment,
+
+    collectedBy: fee.collectedBy
+      ? { id: fee.collectedBy.id, name: fee.collectedBy.getFullName() }
+      : null
+  }))
+);
+
+
+return { count: fees.length, data };
 }
-
-
 
 
 
@@ -215,7 +288,7 @@ async getFeesByDateRange(gym: any, user: any, query: any) {
   async verifyFeesByIds(gym: any, user: any, payload: any) {
     const { feeIds } = payload;
     if (!feeIds || feeIds.length === 0) throw new ApiError(400, "No fees selected");
-
+    console.log("inside fee service: ", payload)
     const fees = await Fee.find({ _id: { $in: feeIds }, gym: gym._id });
     if (!fees || fees.length === 0) throw new ApiError(404, "Fees not found");
 
@@ -242,7 +315,66 @@ async getFeesByDateRange(gym: any, user: any, query: any) {
       })),
       alreadyVerifiedIds
     };
+  } 
+  
+async markPendingFeeAsPaid(gym: any, user: any, payload: any) {
+  const { feeId, amount } = payload; 
+
+  if (!feeId) throw new ApiError(400, "feeId is required");
+  if (!amount || amount <= 0) throw new ApiError(400, "Payment amount must be > 0");
+
+  const fee = await Fee.findOne({ _id: feeId, gym: gym._id });
+  if (!fee) throw new ApiError(404, "Fee not found");
+
+  // Already paid
+  if (fee.paymentStatus === "paid") {
+    return {
+      alreadyPaid: true,
+      message: "This fee is already fully paid",
+      feeId,
+      month: fee.month,
+    };
   }
+
+  const previousPaid = fee.paidAmount || 0;
+  const previousPending = fee.pendingAmount || 0;
+
+  // Ensure user cannot pay more than pending
+  if (amount > previousPending) {
+    throw new ApiError(400, "Payment amount exceeds pendingAmount");
+  }
+
+  // New totals
+  const newPaidAmount = previousPaid + amount;
+  const newPendingAmount = previousPending - amount;
+
+  fee.paidAmount = newPaidAmount;
+  fee.pendingAmount = newPendingAmount;
+
+  // Update status
+  if (newPendingAmount === 0) {
+    fee.paymentStatus = "paid";
+  } else {
+    fee.paymentStatus = "pending";   
+  }
+
+  await fee.save();
+
+  return {
+    feeId: fee._id,
+    month: fee.month,
+    totalAmount: fee.totalAmount,
+    paidAmount: fee.paidAmount,
+    pendingAmount: fee.pendingAmount,
+    paymentStatus: fee.paymentStatus,
+    message:
+      fee.paymentStatus === "paid"
+        ? "Fee fully paid successfully"
+        : "Partial pending payment recorded successfully",
+  };
+}
+
+
 
 
  async  getMembersFeeReport(gym: any, user: any, query: any) {

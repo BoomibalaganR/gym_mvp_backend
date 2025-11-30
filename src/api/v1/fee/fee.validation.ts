@@ -58,11 +58,34 @@ export const verifyFeeSchema = {
   }).options({ stripUnknown: true, abortEarly: true })
 };
 
+export const markPendingFeeSchema = {
+  body: Joi.object({
+    feeId: Joi.string()
+      .trim()
+      .length(24)
+      .hex()
+      .messages({
+        'string.base': 'feeId must be a string',
+        'string.length': 'feeId must be 24 characters',
+        'string.hex': 'feeId must be a valid ObjectId',
+        'any.required': 'feeId is required'
+      }),
+
+    amount: Joi.number()
+      .positive()
+      .messages({
+        'number.base': 'amount must be a number',
+        'number.positive': 'amount must be greater than 0',
+        'any.required': 'amount is required'
+      })
+  }).options({ stripUnknown: true, abortEarly: true })
+};
+
+
 export const feeDateRangeSchema = {
   query: Joi.object({
     start: Joi.string()
       .isoDate()
-      .required()
       .messages({
         'string.base': 'Start date must be a string',
         'string.empty': 'Start date is required',
@@ -71,12 +94,26 @@ export const feeDateRangeSchema = {
       }),
     end: Joi.string()
       .isoDate()
-      .required()
       .messages({
         'string.base': 'End date must be a string',
         'string.empty': 'End date is required',
         'string.isoDate': 'End date must be a valid ISO date',
         'any.required': 'End date is required'
+      }),
+      month: Joi.string()
+  .pattern(/^\d{4}-(0[1-9]|1[0-2])$/)
+  .messages({
+    "string.pattern.base": "month must be in YYYY-MM format like 2025-09"
+  }),
+
+    memberId: Joi.string()
+      .trim()
+      .length(24)
+      .hex()
+      .messages({
+        'string.base': 'memberId must be a string',
+        'string.length': 'memberId must be 24 characters',
+        'string.hex': 'memberId must be a valid ObjectId'
       }),
     paymentType: Joi.string()
       .valid('cash', 'gpay')
@@ -85,10 +122,10 @@ export const feeDateRangeSchema = {
         'any.only': 'Payment type must be either "cash" or "gpay"'
       }),
     paymentStatus: Joi.string()
-      .valid('full', 'pending')
+      .valid('paid', 'pending')
       .optional()
       .messages({
-        'any.only': 'Payment status must be either "full" or "pending"'
+        'any.only': 'Payment status must be either "paid" or "pending"'
       }),
     verifiedByOwner: Joi.boolean()
       .truthy('true')
