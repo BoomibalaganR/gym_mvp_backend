@@ -1,7 +1,7 @@
-import GymController from './gym.controller';
 import { Router } from 'express';
-import { createGymSchema } from './gym.validation';
 import validate from '../../../middlewares/validate.middleware';
+import GymController from './gym.controller';
+import { createGymSchema } from './gym.validation';
 
 const router = Router();
 

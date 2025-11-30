@@ -1,0 +1,31 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const cors_1 = __importDefault(require("cors"));
+const express_1 = __importDefault(require("express"));
+const morgan_1 = __importDefault(require("morgan"));
+const multer_1 = __importDefault(require("multer"));
+const auth_route_1 = __importDefault(require("./api/v1/auth/auth.route"));
+const dashboard_route_1 = __importDefault(require("./api/v1/dashboard/dashboard.route"));
+const fee_route_1 = __importDefault(require("./api/v1/fee/fee.route"));
+const gym_route_1 = __importDefault(require("./api/v1/gym/gym.route"));
+const member_route_1 = __importDefault(require("./api/v1/member/member.route"));
+const error_middleware_1 = __importDefault(require("./middlewares/error.middleware"));
+// store file in memory as buffer (needed for Firebase/S3)
+const storage = multer_1.default.memoryStorage();
+const upload = (0, multer_1.default)({ storage });
+const app = (0, express_1.default)();
+app.use((0, cors_1.default)());
+app.use(upload.single('file'));
+app.use((0, morgan_1.default)('dev'));
+app.use(express_1.default.json({ limit: '2mb' }));
+app.use('/api/v1/gym', gym_route_1.default);
+app.use('/api/v1/auth', auth_route_1.default);
+app.use('/api/v1/members', member_route_1.default);
+app.use('/api/v1/fees', fee_route_1.default);
+app.use('/api/v1/dashboard', dashboard_route_1.default);
+app.get('/api/v1/health', (_, res) => res.json({ status: 'ok' }));
+app.use(error_middleware_1.default);
+exports.default = app;

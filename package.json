@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "build": "tsc",
-    "start": "node dist/server.js",
+    "start": "node dist/server.js", 
     "dev": "nodemon --legacy-watch --watch  src --ext ts,js,json --exec ts-node-dev --transpile-only src/server.ts"
   },
   "dependencies": {

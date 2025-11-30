@@ -1,11 +1,11 @@
 import { NextFunction, Response } from 'express';
 
-import ApiError from '../utils/ApiError';
+import { Request } from 'express';
+import jwt from 'jsonwebtoken';
 import Gym from '../api/v1/gym/gym.model';
 import Member from '../api/v1/member/member.model';
-import { Request } from 'express';
 import { config } from '../config/env';
-import jwt from 'jsonwebtoken';
+import ApiError from '../utils/ApiError';
 
 export interface AuthenticatedRequest extends Request {
   user?: any;  // Full member object or sanitized version

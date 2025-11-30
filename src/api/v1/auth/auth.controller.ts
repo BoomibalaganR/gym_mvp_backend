@@ -1,6 +1,6 @@
 import ApiResponse from '../../../utils/ApiResponse';
-import { AuthService } from './auth.service';
 import catchAsync from '../../../utils/catchAsync';
+import { AuthService } from './auth.service';
 
 const service = new AuthService();
 

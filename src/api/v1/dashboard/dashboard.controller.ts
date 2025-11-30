@@ -1,6 +1,6 @@
 import ApiResponse from '../../../utils/ApiResponse';
-import DashboardService from './dashboard.service';
 import catchAsync from '../../../utils/catchAsync';
+import DashboardService from './dashboard.service';
 
 export class DashboardController {
 

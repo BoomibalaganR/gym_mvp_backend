@@ -1,6 +1,6 @@
 import { Channel } from "../interfaces/channel.interface";
-import { Provider } from "../interfaces/provider.interface";
 import { SmsPayload } from "../interfaces/payload.interface";
+import { Provider } from "../interfaces/provider.interface";
 
 export class SmsChannel implements Channel<SmsPayload> {
   constructor(private provider: Provider<SmsPayload>) {}

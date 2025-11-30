@@ -1,7 +1,7 @@
-import DashboardController from './dashboard.controller';
 import { Router } from 'express';
 import authenticateUser from '../../../middlewares/auth.middleware';
 import authorize from '../../../middlewares/role.middleware';
+import DashboardController from './dashboard.controller';
 
 const router = Router();
 

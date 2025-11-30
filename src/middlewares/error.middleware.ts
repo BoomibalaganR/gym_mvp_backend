@@ -1,8 +1,8 @@
 import { NextFunction, Request, Response } from 'express';
 
+import httpStatus from 'http-status';
 import ApiError from '../utils/ApiError';
 import ApiResponse from '../utils/ApiResponse';
-import httpStatus from 'http-status'
 
 export default function errorHandler(err: any, req: Request, res: Response, next: NextFunction) {
   if (err instanceof ApiError) {

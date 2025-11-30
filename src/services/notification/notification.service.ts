@@ -1,8 +1,8 @@
 import { EmailChannel } from "./channels/email.channel";
-import { NotificationPayload } from "./interfaces/payload.interface";
-import { ProviderFactory } from "./factories/provider.factory";
 import { SmsChannel } from "./channels/sms.channel";
 import { WhatsappChannel } from "./channels/whatsapp.channel";
+import { ProviderFactory } from "./factories/provider.factory";
+import { NotificationPayload } from "./interfaces/payload.interface";
 
 export class NotificationService {
   private channels: Record<string, any> = {};

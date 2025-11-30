@@ -1,6 +1,6 @@
 import ApiResponse from '../../../utils/ApiResponse';
-import { GymService } from './gym.service';
 import catchAsync from '../../../utils/catchAsync';
+import { GymService } from './gym.service';
 
 export class GymController {
   service: GymService;

@@ -1,16 +1,14 @@
 import { ConsoleProvider } from "../providers/console.provider";
-import { SmtpEmailProvider } from "../providers/smtp.email.provider";
-import { TwilioSmsProvider } from "../providers/twilio.sms.provider";
 import { TwilioWhatsappProvider } from "../providers/twilio.whatsapp.provider";
 
 export class ProviderFactory {
   static createEmailProvider() {
-    if (process.env.NODE_ENV === "production") return new SmtpEmailProvider();
+    if (process.env.NODE_ENV === "production") return new ConsoleProvider();
     return new ConsoleProvider();
   }
 
   static createSmsProvider() {
-    if (process.env.NODE_ENV === "production") return new TwilioSmsProvider();
+    if (process.env.NODE_ENV === "production") return new ConsoleProvider();
     return new ConsoleProvider();
   }
 

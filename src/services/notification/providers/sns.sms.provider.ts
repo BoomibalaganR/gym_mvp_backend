@@ -1,11 +1,11 @@
 import {
-  PublishCommand,
-  SNSClient,
+    PublishCommand,
+    SNSClient,
 } from "@aws-sdk/client-sns";
 
-import { BaseProvider } from "./base.provider";
 import { SmsPayload } from "../interfaces/payload.interface";
 import { SmsTemplates } from "../templates/sms.template";
+import { BaseProvider } from "./base.provider";
 
 export class AwsSnsSmsProvider extends BaseProvider<
   SmsPayload,

@@ -1,7 +1,7 @@
-import { BaseProvider } from "./base.provider";
+import nodemailer from "nodemailer";
 import { EmailPayload } from "../interfaces/payload.interface";
 import { EmailTemplates } from "../templates/email.template";
-import nodemailer from "nodemailer";
+import { BaseProvider } from "./base.provider";
 
 export class SmtpEmailProvider extends BaseProvider<EmailPayload, EmailPayload & { Subject: string; Html: string; Text: string }> {
   protected templates = EmailTemplates;

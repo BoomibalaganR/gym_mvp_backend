@@ -1,13 +1,13 @@
 import {
-  DeleteObjectCommand,
-  GetObjectCommand,
-  PutObjectCommand,
-  S3Client,
+    DeleteObjectCommand,
+    GetObjectCommand,
+    PutObjectCommand,
+    S3Client,
 } from "@aws-sdk/client-s3";
 import { FileUpload, StorageProvider } from "./storage.provider.interface";
 
-import { config } from "../../../config/env";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { config } from "../../../config/env";
 
 export class S3StorageProvider implements StorageProvider {
   private s3: S3Client;

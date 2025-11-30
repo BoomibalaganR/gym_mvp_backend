@@ -1,11 +1,9 @@
-import ApiError from '../../../utils/ApiError';
-import Member from '../member/member.model';
-import { NotificationService } from "../../../services/notification";
-import { OtpService } from '../../../services/otp/otp.service';
-import { config } from '../../../config/env';
-import { createOtpService } from '../../../services/otp';
 import httpStatus from 'http-status';
 import jwt from 'jsonwebtoken';
+import { config } from '../../../config/env';
+import { NotificationService } from "../../../services/notification";
+import ApiError from '../../../utils/ApiError';
+import Member from '../member/member.model';
 
 export class AuthService {
     NotificationService: any;

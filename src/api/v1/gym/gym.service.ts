@@ -1,8 +1,8 @@
-import ApiError from '../../../utils/ApiError';
-import Gym from './gym.model';
-import Member from '../member/member.model';
+import httpStatus from 'http-status';
 import { NotificationService } from '../../../services/notification';
-import httpStatus from 'http-status'
+import ApiError from '../../../utils/ApiError';
+import Member from '../member/member.model';
+import Gym from './gym.model';
 
 export class GymService {
   NotificationService: any;
