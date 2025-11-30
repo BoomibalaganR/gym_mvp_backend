@@ -67,10 +67,10 @@ export class MemberService {
   
   private async sanitizeMember(gym: any, user: any, member: any, fields?: string[]) {
       const profileUrl = await member.getProfilePicSignedUrl();
-      const  {unpaidMonths} = await FeeService.getUnpaidMonth(member.id) 
+      const  {unpaidMonths} = await FeeService.getMemberMonthStatus(member.id) 
       const {data: payment_history} = await FeeService.getFeesByDateRange(gym, user, {
         memberId: member.id,
-        months: 3,   // last 3 paid months
+        limit: 3,   // last 3 paid months
         });
         
       // Base full object
