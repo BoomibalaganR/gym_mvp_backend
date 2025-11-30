@@ -45,7 +45,7 @@ async getDashboardSummary(gym: any, user: any, query: any) {
   for (const fee of fees) {
     memberIdsWithFees.add(fee.member.toString());
     
-    if (fee.paymentStatus === "full") {
+    if (fee.paymentStatus === "paid") {
       totalCollected += fee.paidAmount;
         paidMemberCount += 1;
     } else if (fee.paymentStatus === "pending") {
