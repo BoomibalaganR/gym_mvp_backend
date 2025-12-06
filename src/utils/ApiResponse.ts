@@ -21,7 +21,7 @@ export default class ApiResponse<T = any> {
     if (this.data !== undefined) payload.data = this.data;
     if (this.meta !== undefined) payload.meta = this.meta;
     if (this.details !== undefined) payload.details = this.details;
-    console.log(payload)
+    // console.log(payload)
     return res.status(this.statusCode).json(payload);
   }
 

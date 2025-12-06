@@ -1,8 +1,8 @@
+import { config } from '../../config/env';
 import { LocalStorageProvider } from './providers/local.storage.provider';
 import { S3StorageProvider } from './providers/s3.storage.provider';
 import { StorageProvider } from './providers/storage.provider.interface';
 import { StorageService } from './storage.service';
-import { config } from '../../config/env';
 
 export const createStorageService = (): StorageService => {
   const Provider: new () => StorageProvider =
