@@ -1,13 +1,13 @@
-import cors from 'cors';
-import express from 'express';
-import morgan from 'morgan';
-import multer from 'multer';
 import authRoutes from './api/v1/auth/auth.route';
+import cors from 'cors';
 import dashboardReoutes from './api/v1/dashboard/dashboard.route';
+import errorHandler from './middlewares/error.middleware';
+import express from 'express';
 import feeRoutes from './api/v1/fee/fee.route';
 import gymRoutes from './api/v1/gym/gym.route';
 import memberRoutes from './api/v1/member/member.route';
-import errorHandler from './middlewares/error.middleware';
+import morgan from 'morgan';
+import multer from 'multer';
 
 // store file in memory as buffer (needed for Firebase/S3)
 const storage = multer.memoryStorage();
@@ -25,7 +25,7 @@ app.use('/api/v1/members', memberRoutes);
 app.use('/api/v1/fees', feeRoutes); 
 app.use('/api/v1/dashboard', dashboardReoutes);
 
-app.get('/api/v1/health', (_, res) => res.json({ status: 'ok' }));
+app.get('/api/v1/health', (_, res) => res.json({ status: 'okay..!!' }));
 
 app.use(errorHandler);
 
