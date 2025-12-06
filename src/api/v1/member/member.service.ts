@@ -1,11 +1,11 @@
-import httpStatus from 'http-status';
-import { FileUpload } from '../../../services/storage/providers/storage.provider.interface';
 import ApiError from '../../../utils/ApiError';
-import { getMonthRange } from '../../../utils/date.util';
-import paginate from '../../../utils/paginate';
 import Fee from '../fee/fee.model';
 import FeeService from '../fee/fee.service';
+import { FileUpload } from '../../../services/storage/providers/storage.provider.interface';
 import Member from './member.model';
+import { getMonthRange } from '../../../utils/date.util';
+import httpStatus from 'http-status';
+import paginate from '../../../utils/paginate';
 
 export class MemberService {
 
@@ -108,7 +108,7 @@ export class MemberService {
       if (!fields || fields.length === 0) return full;
       
       const filtered: any = { id: full.id }; // always include id
-      console.log(full)
+    //   console.log(full)
       fields.forEach(f => {
           if (f.includes('.')) {
               // nested field like referred_by.name
@@ -121,8 +121,8 @@ export class MemberService {
               filtered[f] = full[f];
           }
       });
-      console.log()
-      console.log(filtered)
+    //   console.log()
+    //   console.log(filtered)
       return filtered;
   }
 
@@ -192,7 +192,7 @@ async list(gym: any, user: any, q: any) {
   // Map → memberId → status
   const statusMap = new Map();
   feeRecords.forEach(r => statusMap.set(String(r.member), r.paymentStatus));
-  console.log(feeRecords)
+//   console.log(feeRecords)
   // Apply payment=paid | unpaid | pending
   const filteredMembers = members.filter(m => {
     const currentStatus = statusMap.get(String(m._id));
@@ -203,7 +203,7 @@ async list(gym: any, user: any, q: any) {
 
     return true;
   });
-  console.log(filteredMembers)
+//   console.log(filteredMembers)
   const data = await Promise.all(
     filteredMembers.map(m => this.sanitizeMember(gym, user, m, selectedFields))
   );
@@ -233,7 +233,7 @@ async list(gym: any, user: any, q: any) {
   async update(gym: any, user: any, memberId: string, payload: any) {
       // Only allow certain fields to be updated
       const allowedFields = ['first_name', 'last_name', 'nickname', 'email', 'address', 'working_status', 'session', 'branch', 'is_active', 'referred_by', 'phone', 'gender']; 
-      console.log("Update payload:", payload);
+    //   console.log("Update payload:", payload);
       const updateData: any = {};
       for (const key of allowedFields) {
           if (payload[key] !== undefined) updateData[key] = payload[key];

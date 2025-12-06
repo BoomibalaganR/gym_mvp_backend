@@ -1,9 +1,9 @@
 import { endOfMonth, format, parseISO, startOfMonth, subMonths } from 'date-fns';
 
 import ApiError from '../../../utils/ApiError';
-import { getMonthRange } from '../../../utils/date.util';
-import Member from '../member/member.model';
 import Fee from './fee.model';
+import Member from '../member/member.model';
+import { getMonthRange } from '../../../utils/date.util';
 
 export class FeeService {
   // ✅ Create fee with partial payments and bulk insert
@@ -288,7 +288,7 @@ return { count: fees.length, data };
   async verifyFeesByIds(gym: any, user: any, payload: any) {
     const { feeIds } = payload;
     if (!feeIds || feeIds.length === 0) throw new ApiError(400, "No fees selected");
-    console.log("inside fee service: ", payload)
+    // console.log("inside fee service: ", payload)
     const fees = await Fee.find({ _id: { $in: feeIds }, gym: gym._id });
     if (!fees || fees.length === 0) throw new ApiError(404, "Fees not found");
 
