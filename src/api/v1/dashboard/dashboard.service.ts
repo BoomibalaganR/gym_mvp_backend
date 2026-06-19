@@ -1,13 +1,13 @@
 import Fee from '../fee/fee.model';
 import Member from '../member/member.model';
-function getMonthRange(ym) {
+function getMonthRange(ym: string) {
   const [year, month] = ym.split("-").map(Number);
 
   return {
     start: new Date(year, month, 1)
   };
 }
-function getFinalMonthRange(queryMonth) {
+function getFinalMonthRange(queryMonth?: string) {
   if (queryMonth) {
     // Custom month from query
     return getMonthRange(queryMonth);

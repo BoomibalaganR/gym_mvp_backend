@@ -4,9 +4,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SmtpEmailProvider = void 0;
-const base_provider_1 = require("./base.provider");
-const email_template_1 = require("../templates/email.template");
 const nodemailer_1 = __importDefault(require("nodemailer"));
+const email_template_1 = require("../templates/email.template");
+const base_provider_1 = require("./base.provider");
 class SmtpEmailProvider extends base_provider_1.BaseProvider {
     templates = email_template_1.EmailTemplates;
     transporter;

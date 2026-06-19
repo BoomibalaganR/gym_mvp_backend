@@ -4,9 +4,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = errorHandler;
+const http_status_1 = __importDefault(require("http-status"));
 const ApiError_1 = __importDefault(require("../utils/ApiError"));
 const ApiResponse_1 = __importDefault(require("../utils/ApiResponse"));
-const http_status_1 = __importDefault(require("http-status"));
 function errorHandler(err, req, res, next) {
     if (err instanceof ApiError_1.default) {
         return ApiResponse_1.default.error(res, err.statusCode, err.message, err.details || null);

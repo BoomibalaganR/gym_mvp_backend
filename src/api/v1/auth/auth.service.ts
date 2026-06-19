@@ -131,9 +131,11 @@ export class AuthService {
       loginType, // <── added this
     };
 
-   return jwt.sign(payload, config.jwtSecret, {
-        expiresIn: config.jwtExpiresIn,
-    });
+    const options: jwt.SignOptions = {};
+    if (config.jwtExpiresIn) {
+        options.expiresIn = config.jwtExpiresIn as any;
+    }
+    return jwt.sign(payload, config.jwtSecret!, options);
 
   }
 

@@ -2,9 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.NotificationService = void 0;
 const email_channel_1 = require("./channels/email.channel");
-const provider_factory_1 = require("./factories/provider.factory");
 const sms_channel_1 = require("./channels/sms.channel");
 const whatsapp_channel_1 = require("./channels/whatsapp.channel");
+const provider_factory_1 = require("./factories/provider.factory");
 class NotificationService {
     channels = {};
     constructor() {

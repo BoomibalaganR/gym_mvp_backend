@@ -5,13 +5,13 @@ import ApiError from '../../../utils/ApiError';
 import Member from './member.model';
 
 export class CSVMemberService {
-  async batchCreate(gym, user, file, payload) {
+  async batchCreate(gym: any, user: any, file: any, payload: any) {
     if (!file) {
       throw new ApiError(httpStatus.BAD_REQUEST, 'CSV file is required');
     }
 
     // Parse CSV and get validation results
-    const parseResult = await this.parseCSV(file.buffer);
+    const parseResult = await this.parseCSV(file.buffer) as any;
     
     // If there are invalid rows, return them immediately without processing
     if (parseResult.invalidMembers.length > 0) {
@@ -26,7 +26,7 @@ export class CSVMemberService {
     }
 
     // If all rows are valid, proceed with batch creation
-    const results = {
+    const results: { status: string; total: number; successful: number; failed: number; errors: any[] } = {
       status: 'success',
       total: parseResult.validMembers.length,
       successful: 0,
@@ -48,9 +48,9 @@ export class CSVMemberService {
     return results;
   }
 
-  async parseCSV(csvBuffer) {
+  async parseCSV(csvBuffer: any) {
     return new Promise((resolve, reject) => {
-      const results = {
+      const results: { validMembers: any[]; invalidMembers: any[]; totalRows: number } = {
         validMembers: [],
         invalidMembers: [],
         totalRows: 0
@@ -89,7 +89,7 @@ export class CSVMemberService {
     });
   }
 
-  validateMemberData(data, rowNumber) {
+  validateMemberData(data: any, rowNumber: any) {
     const errors = [];
     
     // Required field validation
@@ -151,12 +151,12 @@ export class CSVMemberService {
     };
   }
 
-  isValidEmail(email) {
+  isValidEmail(email: string) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   }
 
-  cleanCSVData(data) {
+  cleanCSVData(data: any) {
     return {
       first_name: (data.first_name || data['First Name'] || data['first name'] || '').trim(),
       last_name: (data.last_name || data['Last Name'] || data['last name'] || '').trim(),
@@ -172,20 +172,20 @@ export class CSVMemberService {
     };
   }
 
-  async processBatch(gym, batch, startingRow) {
-    const batchResults = {
+  async processBatch(gym: any, batch: any[], startingRow: number) {
+    const batchResults: { successful: number; failed: number; errors: any[] } = {
       successful: 0,
       failed: 0,
       errors: []
     };
 
-    const promises = batch.map(async (memberData, index) => {
+    const promises = batch.map(async (memberData: any, index: number) => {
       const currentRow = startingRow + index;
       
       try {
         await this.createSingleMember(gym, memberData);
         batchResults.successful++;
-      } catch (error) {
+      } catch (error: any) {
         batchResults.failed++;
         batchResults.errors.push({
           row: currentRow,
@@ -200,7 +200,7 @@ export class CSVMemberService {
     return batchResults;
   }
 
-  async createSingleMember(gym, memberData) {
+  async createSingleMember(gym: any, memberData: any) {
     // Check for duplicates
     const existing = await Member.findOne({
       gym: gym.id.toString(),

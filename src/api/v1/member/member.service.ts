@@ -133,7 +133,7 @@ async list(gym: any, user: any, q: any) {
   const payment = q.payment;     // paid | unpaid | pending
   const monthStr = q.month;      // YYYY-MM
 
-  const selectedFields = q.fields?.split(",").map(f => f.trim()) || [];
+  const selectedFields = q.fields?.split(",").map((f: string) => f.trim()) || [];
 
   // --------------------------------------
   // 1. Base member filter
@@ -217,7 +217,7 @@ async list(gym: any, user: any, q: any) {
 }
 
   async get(gym: any, user: any, memberId: string, q: any) {
-      const selectedFields = q.fields?.split(',').map(f => f.trim()).filter(Boolean) || [];
+      const selectedFields = q.fields?.split(',').map((f: string) => f.trim()).filter(Boolean) || [];
       let query = Member.findOne({ _id: memberId, gym: gym._id }).select('-password');
 
       // if (selectedFields.some(f => f.startsWith('referred_by'))) {
@@ -242,7 +242,7 @@ async list(gym: any, user: any, q: any) {
         { _id: memberId, gym: gym._id },
         { $set: updateData },
         { new: true }
-      ).select('-password');
+      ).select('-password') as any;
       if (!updated) throw new ApiError(404, 'Member not found');
       
       const sanitized = {
@@ -271,7 +271,7 @@ async list(gym: any, user: any, q: any) {
   }
 
   // Always return signed URL
-  return await member.getSignedProfilePicUrl();
+  return await member.getProfilePicSignedUrl();
 }
 
 

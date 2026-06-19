@@ -139,7 +139,7 @@ export const feeDateRangeSchema = {
       const start = new Date(value.start);
       const end = new Date(value.end);
       if (start >= end) {
-        return helpers.message('"start" must be less than "end"');
+        return helpers.message('"start" must be less than "end"' as any);
       }
       return value;
     })

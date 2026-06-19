@@ -5,8 +5,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthController = void 0;
 const ApiResponse_1 = __importDefault(require("../../../utils/ApiResponse"));
-const auth_service_1 = require("./auth.service");
 const catchAsync_1 = __importDefault(require("../../../utils/catchAsync"));
+const auth_service_1 = require("./auth.service");
 const service = new auth_service_1.AuthService();
 class AuthController {
     login = (0, catchAsync_1.default)(async (req, res) => {

@@ -31,7 +31,7 @@ class ApiResponse {
             payload.meta = this.meta;
         if (this.details !== undefined)
             payload.details = this.details;
-        console.log(payload);
+        // console.log(payload)
         return res.status(this.statusCode).json(payload);
     }
     static success(res, message, data, meta) {

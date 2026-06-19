@@ -21,4 +21,9 @@ exports.config = {
     aws_access_key: process.env.AWS_ACCESS_KEY_ID,
     aws_secret_key: process.env.AWS_SECRET_ACCESS_KEY,
     bucket_name: process.env.AWS_BUCKET_NAME,
+    twilioAccountSid: process.env.TWILIO_ACCOUNT_SID,
+    twilioAuthToken: process.env.TWILIO_AUTH_TOKEN,
+    twilioPhoneNumber: process.env.TWILIO_PHONE_NUMBER,
+    project_id: process.env.FIREBASE_PROJECT_ID,
+    key_file: process.env.FIREBASE_KEY_FILE,
 };

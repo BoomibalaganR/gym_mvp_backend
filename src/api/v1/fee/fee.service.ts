@@ -17,7 +17,7 @@ export class FeeService {
   const { amount: totalPaid, months, paymentType, transactionId } = payload;
 
   // Convert input months → normalized Date
-  const normalizedMonths = months.map(m => {
+  const normalizedMonths = months.map((m: string) => {
     const [year, month] = m.split("-");
     return new Date(Date.UTC(Number(year), Number(month) - 1, 1));
   });
@@ -86,7 +86,7 @@ export class FeeService {
       pendingAmount: fee.pendingAmount,
       paymentStatus: fee.paymentStatus
     })),
-    alreadyPaidMonths: normalizedMonths.filter(m =>
+    alreadyPaidMonths: normalizedMonths.filter((m: Date) =>
       existingMonthDates.includes(m.getTime())
     )
   };
@@ -262,18 +262,18 @@ async getFeesByDateRange(gym: any, user: any, query: any) {
 
     member: fee.member
       ? {
-          id: fee.member.id,
-          name: fee.member.getFullName(),
-          phone: fee.member.phone,
-          profilePicUrl: await fee.member.getProfilePicSignedUrl(),
-          profileHash: fee.member.profilepic_hash || null
+          id: (fee.member as any).id,
+          name: (fee.member as any).getFullName(),
+          phone: (fee.member as any).phone,
+          profilePicUrl: await (fee.member as any).getProfilePicSignedUrl(),
+          profileHash: (fee.member as any).profilepic_hash || null
         }
       : null,
 
     dateOfPayment: fee.dateOfPayment,
 
     collectedBy: fee.collectedBy
-      ? { id: fee.collectedBy.id, name: fee.collectedBy.getFullName() }
+      ? { id: (fee.collectedBy as any).id, name: (fee.collectedBy as any).getFullName ? (fee.collectedBy as any).getFullName() : (fee.collectedBy as any).first_name }
       : null
   }))
 );
@@ -414,44 +414,44 @@ async markPendingFeeAsPaid(gym: any, user: any, payload: any) {
   const pendingMembers: any[] = [];
 
   for (const member of members) {
-    const memberFees = feeMap.get(member._id.toString()) || [];
+    const memberFees = feeMap.get((member as any)._id.toString()) || [];
 
     const memberInfo = {
       _id: member._id,
       phone: member.phone,
       nickname: member.nickname,
       is_active: member.is_active,
-      memberName: member.name,
+      memberName: (member as any).getFullName(),
       profile_url: await member.getProfilePicSignedUrl(),
     };
 
     // ✅ Paid Months
     const paidMonths = memberFees
-      .filter(f => f.paymentStatus === "paid")
-      .map(f => ({
+      .filter((f: any) => f.paymentStatus === "paid")
+      .map((f: any) => ({
         month: f.month,
         paidAmount: f.paidAmount,
         collectedBy: f.collectedBy?.name || "N/A",
         dateOfPayment: f.dateOfPayment,
       }));
-    const totalPaidAmount = paidMonths.reduce((a, b) => a + (b.paidAmount || 0), 0);
+    const totalPaidAmount = paidMonths.reduce((a: any, b: any) => a + (b.paidAmount || 0), 0);
 
     // ⚠️ Pending Payments
     const pendingMonths = memberFees
-      .filter(f => f.paymentStatus === "pending")
-      .map(f => ({
+      .filter((f: any) => f.paymentStatus === "pending")
+      .map((f: any) => ({
         month: f.month,
         pendingAmount: f.pendingAmount,
         paidAmount: f.paidAmount,
       }));
-    const totalPendingAmount = pendingMonths.reduce((a, b) => a + (b.pendingAmount || 0), 0);
+    const totalPendingAmount = pendingMonths.reduce((a: any, b: any) => a + (b.pendingAmount || 0), 0);
 
     // ❌ Unpaid (months not found in fees)
-    const paidOrPendingMonths = memberFees.map(f => f.month);
+    const paidOrPendingMonths = memberFees.map((f: any) => f.month);
     const unpaidMonths = months
-      .filter(m => !paidOrPendingMonths.includes(m))
-      .map(m => ({ month: m, amountToPay: member.monthlyFee || 200 }));
-    const totalAmountToPay = unpaidMonths.reduce((a, b) => a + (b.amountToPay || 0), 0);
+      .filter((m: any) => !paidOrPendingMonths.includes(m))
+      .map((m: any) => ({ month: m, amountToPay: (member as any).monthlyFee || 200 }));
+    const totalAmountToPay = unpaidMonths.reduce((a: any, b: any) => a + (b.amountToPay || 0), 0);
 
     // 🎯 Logic per status
     if (status === "paid" && paidMonths.length > 0) {

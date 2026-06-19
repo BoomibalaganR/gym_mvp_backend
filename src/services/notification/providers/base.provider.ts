@@ -11,13 +11,13 @@ export abstract class BaseProvider<T, R = T> implements Provider<T, R> {
       const rendered = Object.fromEntries(
         Object.entries(template).map(([key, val]) => [
           key,
-          val.replace(/{(\w+)}/g, (_, k) => (payload as any).context[k] || ""),
+          (val as string).replace(/{(\w+)}/g, (_: string, k: string) => (payload as any).context[k] || ""),
         ])
       );
       return { ...payload, ...rendered } as any;
     }
 
-    return { ...payload, message: template.replace(/{(\w+)}/g, (_, k) => (payload as any).context[k] || "")} as any;
+    return { ...payload, message: template.replace(/{(\w+)}/g, (_: string, k: string) => (payload as any).context[k] || "")} as any;
   }
 
   abstract send(payload: R): Promise<void>;

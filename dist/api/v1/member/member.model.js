@@ -60,8 +60,6 @@ MemberSchema.methods.uploadProfilePic = async function (file) {
     const optimizedFile = {
         buffer: optimizedBuffer,
         mimetype: "image/webp", // Always store as webp
-        filename: file.filename,
-        size: optimizedBuffer.length,
     };
     const afterSizeKB = (optimizedBuffer.length / 1024).toFixed(2);
     console.log("🎯 After compression:", afterSizeKB, "KB");

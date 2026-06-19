@@ -4,11 +4,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.GymService = void 0;
-const ApiError_1 = __importDefault(require("../../../utils/ApiError"));
-const gym_model_1 = __importDefault(require("./gym.model"));
-const member_model_1 = __importDefault(require("../member/member.model"));
-const notification_1 = require("../../../services/notification");
 const http_status_1 = __importDefault(require("http-status"));
+const notification_1 = require("../../../services/notification");
+const ApiError_1 = __importDefault(require("../../../utils/ApiError"));
+const member_model_1 = __importDefault(require("../member/member.model"));
+const gym_model_1 = __importDefault(require("./gym.model"));
 class GymService {
     NotificationService;
     constructor() {

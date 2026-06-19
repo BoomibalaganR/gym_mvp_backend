@@ -5,8 +5,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.GymController = void 0;
 const ApiResponse_1 = __importDefault(require("../../../utils/ApiResponse"));
-const gym_service_1 = require("./gym.service");
 const catchAsync_1 = __importDefault(require("../../../utils/catchAsync"));
+const gym_service_1 = require("./gym.service");
 class GymController {
     service;
     constructor() { this.service = new gym_service_1.GymService(); }

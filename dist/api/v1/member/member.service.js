@@ -4,13 +4,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MemberService = void 0;
-const http_status_1 = __importDefault(require("http-status"));
 const ApiError_1 = __importDefault(require("../../../utils/ApiError"));
-const date_util_1 = require("../../../utils/date.util");
-const paginate_1 = __importDefault(require("../../../utils/paginate"));
 const fee_model_1 = __importDefault(require("../fee/fee.model"));
 const fee_service_1 = __importDefault(require("../fee/fee.service"));
 const member_model_1 = __importDefault(require("./member.model"));
+const date_util_1 = require("../../../utils/date.util");
+const http_status_1 = __importDefault(require("http-status"));
+const paginate_1 = __importDefault(require("../../../utils/paginate"));
 class MemberService {
     async create(gym, user, file, payload) {
         const existing = await member_model_1.default.findOne({
@@ -97,7 +97,7 @@ class MemberService {
         if (!fields || fields.length === 0)
             return full;
         const filtered = { id: full.id }; // always include id
-        console.log(full);
+        //   console.log(full)
         fields.forEach(f => {
             if (f.includes('.')) {
                 // nested field like referred_by.name
@@ -112,8 +112,8 @@ class MemberService {
                 filtered[f] = full[f];
             }
         });
-        console.log();
-        console.log(filtered);
+        //   console.log()
+        //   console.log(filtered)
         return filtered;
     }
     async list(gym, user, q) {
@@ -122,7 +122,7 @@ class MemberService {
         const status = q.status;
         const payment = q.payment; // paid | unpaid | pending
         const monthStr = q.month; // YYYY-MM
-        const selectedFields = q.fields?.split(",").map(f => f.trim()) || [];
+        const selectedFields = q.fields?.split(",").map((f) => f.trim()) || [];
         // --------------------------------------
         // 1. Base member filter
         // --------------------------------------
@@ -169,7 +169,7 @@ class MemberService {
         // Map → memberId → status
         const statusMap = new Map();
         feeRecords.forEach(r => statusMap.set(String(r.member), r.paymentStatus));
-        console.log(feeRecords);
+        //   console.log(feeRecords)
         // Apply payment=paid | unpaid | pending
         const filteredMembers = members.filter(m => {
             const currentStatus = statusMap.get(String(m._id));
@@ -181,7 +181,7 @@ class MemberService {
                 return !currentStatus; // no fee created = unpaid
             return true;
         });
-        console.log(filteredMembers);
+        //   console.log(filteredMembers)
         const data = await Promise.all(filteredMembers.map(m => this.sanitizeMember(gym, user, m, selectedFields)));
         return {
             total: filteredMembers.length,
@@ -191,7 +191,7 @@ class MemberService {
         };
     }
     async get(gym, user, memberId, q) {
-        const selectedFields = q.fields?.split(',').map(f => f.trim()).filter(Boolean) || [];
+        const selectedFields = q.fields?.split(',').map((f) => f.trim()).filter(Boolean) || [];
         let query = member_model_1.default.findOne({ _id: memberId, gym: gym._id }).select('-password');
         // if (selectedFields.some(f => f.startsWith('referred_by'))) {
         query = query.populate('referred_by', 'first_name last_name nickname phone profilepic_hash profilepic_content_type');
@@ -204,7 +204,7 @@ class MemberService {
     async update(gym, user, memberId, payload) {
         // Only allow certain fields to be updated
         const allowedFields = ['first_name', 'last_name', 'nickname', 'email', 'address', 'working_status', 'session', 'branch', 'is_active', 'referred_by', 'phone', 'gender'];
-        console.log("Update payload:", payload);
+        //   console.log("Update payload:", payload);
         const updateData = {};
         for (const key of allowedFields) {
             if (payload[key] !== undefined)
@@ -234,7 +234,7 @@ class MemberService {
             throw new ApiError_1.default(http_status_1.default.NOT_FOUND, "Profile picture not found");
         }
         // Always return signed URL
-        return await member.getSignedProfilePicUrl();
+        return await member.getProfilePicSignedUrl();
     }
     async uploadProfilePic(gym, user, memberId, file) {
         const member = await member_model_1.default.findById(memberId);

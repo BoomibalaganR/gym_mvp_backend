@@ -2,8 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AwsSnsSmsProvider = void 0;
 const client_sns_1 = require("@aws-sdk/client-sns");
-const base_provider_1 = require("./base.provider");
 const sms_template_1 = require("../templates/sms.template");
+const base_provider_1 = require("./base.provider");
 class AwsSnsSmsProvider extends base_provider_1.BaseProvider {
     templates = sms_template_1.SmsTemplates;
     client;

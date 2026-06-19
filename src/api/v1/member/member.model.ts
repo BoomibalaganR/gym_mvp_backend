@@ -5,7 +5,45 @@ import { createStorageService } from '../../../services/storage';
 import { FileUpload } from '../../../services/storage/providers/storage.provider.interface';
 import { optimizeImage } from '../../../utils/image.util';
 
-const MemberSchema = new mongoose.Schema({
+export interface IMember extends mongoose.Document {
+  gym: mongoose.Types.ObjectId;
+  first_name: string;
+  last_name?: string;
+  phone: string;
+  email?: string;
+  nickname?: string;
+  gender: 'male' | 'female' | 'other';
+  profilepic_content_type?: string;
+  profilepic_hash?: string;
+  referred_by?: mongoose.Types.ObjectId;
+  otp?: string;
+  otp_expiry?: Date;
+  address?: string;
+  working_status?: string;
+  session?: string;
+  branch?: string;
+  role: 'owner' | 'collector' | 'member';
+  is_admin: boolean;
+  can_access_bot: boolean;
+  is_active: boolean;
+  password?: string;
+  createdAt: Date;
+  updatedAt: Date;
+
+  // Methods
+  getFullName(): string;
+  isPasswordMatch(password: string): Promise<boolean>;
+  getProfilePicStorageKey(): string;
+  uploadProfilePic(file: FileUpload): Promise<{hash: string}>;
+  deleteProfilePic(): Promise<void>;
+  getProfilePicSignedUrl(): Promise<string>;
+  getprofilePicPublicUrl(): string;
+  getProfilePicProxyUrl(): string;
+}
+
+export interface IMemberModel extends mongoose.Model<IMember> {}
+
+const MemberSchema = new mongoose.Schema<IMember, IMemberModel>({
   gym: { type: mongoose.Schema.Types.ObjectId, ref: 'Gym', required: true },
   first_name: { type: String, required: true },
   last_name: { type: String, required: false },
@@ -41,7 +79,7 @@ MemberSchema.methods.getFullName = function () {
 };
 
 
-MemberSchema.methods.isPasswordMatch = async function (password) {
+MemberSchema.methods.isPasswordMatch = async function (password: string) {
     return await bcrypt.compare(password, this.password)
 }
 MemberSchema.methods.getProfilePicStorageKey = function (): string {
@@ -65,8 +103,6 @@ MemberSchema.methods.uploadProfilePic = async function (file: FileUpload) {
   const optimizedFile: FileUpload = {
     buffer: optimizedBuffer,
     mimetype: "image/webp",    // Always store as webp
-    filename: file.filename,
-    size: optimizedBuffer.length,
   };
    const afterSizeKB = (optimizedBuffer.length / 1024).toFixed(2);
   console.log("🎯 After compression:", afterSizeKB, "KB");
@@ -145,9 +181,9 @@ MemberSchema.pre("save", async function (next) {
     this.password = hashedPassword;
     next();
   } catch (error) {
-    next(error);
+    next(error as mongoose.CallbackError);
   }
 });
 
 
-export default mongoose.model('Member', MemberSchema);
+export default mongoose.model<IMember, IMemberModel>('Member', MemberSchema);

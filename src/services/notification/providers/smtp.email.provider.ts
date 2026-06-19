@@ -3,7 +3,7 @@ import { EmailPayload } from "../interfaces/payload.interface";
 import { EmailTemplates } from "../templates/email.template";
 import { BaseProvider } from "./base.provider";
 
-export class SmtpEmailProvider extends BaseProvider<EmailPayload, EmailPayload & { Subject: string; Html: string; Text: string }> {
+export class SmtpEmailProvider extends BaseProvider<EmailPayload, EmailPayload & { subject: string; html: string; text: string }> {
   protected templates = EmailTemplates;
   private transporter: any;
 

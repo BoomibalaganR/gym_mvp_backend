@@ -2,8 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.S3StorageProvider = void 0;
 const client_s3_1 = require("@aws-sdk/client-s3");
-const env_1 = require("../../../config/env");
 const s3_request_presigner_1 = require("@aws-sdk/s3-request-presigner");
+const env_1 = require("../../../config/env");
 class S3StorageProvider {
     s3;
     bucketName;

@@ -6,9 +6,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.FeeService = void 0;
 const date_fns_1 = require("date-fns");
 const ApiError_1 = __importDefault(require("../../../utils/ApiError"));
-const date_util_1 = require("../../../utils/date.util");
-const member_model_1 = __importDefault(require("../member/member.model"));
 const fee_model_1 = __importDefault(require("./fee.model"));
+const member_model_1 = __importDefault(require("../member/member.model"));
+const date_util_1 = require("../../../utils/date.util");
 class FeeService {
     // ✅ Create fee with partial payments and bulk insert
     async createFee(gym, user, memberId, payload) {
@@ -20,7 +20,7 @@ class FeeService {
         const gymMonthlyFee = gym.monthlyFee || 200;
         const { amount: totalPaid, months, paymentType, transactionId } = payload;
         // Convert input months → normalized Date
-        const normalizedMonths = months.map(m => {
+        const normalizedMonths = months.map((m) => {
             const [year, month] = m.split("-");
             return new Date(Date.UTC(Number(year), Number(month) - 1, 1));
         });
@@ -80,7 +80,7 @@ class FeeService {
                 pendingAmount: fee.pendingAmount,
                 paymentStatus: fee.paymentStatus
             })),
-            alreadyPaidMonths: normalizedMonths.filter(m => existingMonthDates.includes(m.getTime()))
+            alreadyPaidMonths: normalizedMonths.filter((m) => existingMonthDates.includes(m.getTime()))
         };
     }
     async getMemberMonthStatus(memberId) {
@@ -227,7 +227,7 @@ class FeeService {
                 : null,
             dateOfPayment: fee.dateOfPayment,
             collectedBy: fee.collectedBy
-                ? { id: fee.collectedBy.id, name: fee.collectedBy.getFullName() }
+                ? { id: fee.collectedBy.id, name: fee.collectedBy.getFullName ? fee.collectedBy.getFullName() : fee.collectedBy.first_name }
                 : null
         })));
         return { count: fees.length, data };
@@ -237,7 +237,7 @@ class FeeService {
         const { feeIds } = payload;
         if (!feeIds || feeIds.length === 0)
             throw new ApiError_1.default(400, "No fees selected");
-        console.log("inside fee service: ", payload);
+        // console.log("inside fee service: ", payload)
         const fees = await fee_model_1.default.find({ _id: { $in: feeIds }, gym: gym._id });
         if (!fees || fees.length === 0)
             throw new ApiError_1.default(404, "Fees not found");
@@ -352,13 +352,13 @@ class FeeService {
                 phone: member.phone,
                 nickname: member.nickname,
                 is_active: member.is_active,
-                memberName: member.name,
+                memberName: member.getFullName(),
                 profile_url: await member.getProfilePicSignedUrl(),
             };
             // ✅ Paid Months
             const paidMonths = memberFees
-                .filter(f => f.paymentStatus === "paid")
-                .map(f => ({
+                .filter((f) => f.paymentStatus === "paid")
+                .map((f) => ({
                 month: f.month,
                 paidAmount: f.paidAmount,
                 collectedBy: f.collectedBy?.name || "N/A",
@@ -367,18 +367,18 @@ class FeeService {
             const totalPaidAmount = paidMonths.reduce((a, b) => a + (b.paidAmount || 0), 0);
             // ⚠️ Pending Payments
             const pendingMonths = memberFees
-                .filter(f => f.paymentStatus === "pending")
-                .map(f => ({
+                .filter((f) => f.paymentStatus === "pending")
+                .map((f) => ({
                 month: f.month,
                 pendingAmount: f.pendingAmount,
                 paidAmount: f.paidAmount,
             }));
             const totalPendingAmount = pendingMonths.reduce((a, b) => a + (b.pendingAmount || 0), 0);
             // ❌ Unpaid (months not found in fees)
-            const paidOrPendingMonths = memberFees.map(f => f.month);
+            const paidOrPendingMonths = memberFees.map((f) => f.month);
             const unpaidMonths = months
-                .filter(m => !paidOrPendingMonths.includes(m))
-                .map(m => ({ month: m, amountToPay: member.monthlyFee || 200 }));
+                .filter((m) => !paidOrPendingMonths.includes(m))
+                .map((m) => ({ month: m, amountToPay: member.monthlyFee || 200 }));
             const totalAmountToPay = unpaidMonths.reduce((a, b) => a + (b.amountToPay || 0), 0);
             // 🎯 Logic per status
             if (status === "paid" && paidMonths.length > 0) {

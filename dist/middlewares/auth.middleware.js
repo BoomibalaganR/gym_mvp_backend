@@ -4,11 +4,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = authenticateUser;
-const ApiError_1 = __importDefault(require("../utils/ApiError"));
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const gym_model_1 = __importDefault(require("../api/v1/gym/gym.model"));
 const member_model_1 = __importDefault(require("../api/v1/member/member.model"));
 const env_1 = require("../config/env");
-const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const ApiError_1 = __importDefault(require("../utils/ApiError"));
 async function authenticateUser(req, _res, next) {
     const header = req.headers.authorization;
     if (!header || !header.startsWith('Bearer ')) {

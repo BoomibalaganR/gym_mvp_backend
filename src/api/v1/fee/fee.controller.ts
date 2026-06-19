@@ -1,4 +1,5 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
+import { AuthenticatedRequest as Request } from '../../../middlewares/auth.middleware';
 
 import ApiResponse from '../../../utils/ApiResponse';
 import catchAsync from '../../../utils/catchAsync';
