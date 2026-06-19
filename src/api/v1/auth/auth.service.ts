@@ -1,9 +1,13 @@
-import httpStatus from 'http-status';
-import jwt from 'jsonwebtoken';
-import { config } from '../../../config/env';
-import { NotificationService } from "../../../services/notification";
 import ApiError from '../../../utils/ApiError';
 import Member from '../member/member.model';
+import { NotificationService } from "../../../services/notification";
+import { config } from '../../../config/env';
+import httpStatus from 'http-status';
+import jwt from 'jsonwebtoken';
+
+const OTP_WHITELISTED_USER = new Set([
+  "9488840671"
+]);
 
 export class AuthService {
     NotificationService: any;
@@ -27,19 +31,20 @@ export class AuthService {
         );
 
         if (!member) throw new ApiError(httpStatus.BAD_REQUEST, 'Member not found. Contact support to onboard.');
-
-        await this.NotificationService.send({
-            sms: {
-                payload: {
-                    to: phone,
-                    templateName: "otp",
-                    context: { 
-                        name: member.getFullName(), 
-                        otp: otp
-                    },
-                } 
-            }
-        });
+        if(!OTP_WHITELISTED_USER.has(phone)){
+          await this.NotificationService.send({
+              sms: {
+                  payload: {
+                      to: phone,
+                      templateName: "otp",
+                      context: { 
+                          name: member.getFullName(), 
+                          otp: otp
+                      },
+                  } 
+              }
+          });
+        }
         return { message: 'OTP sent successfully' };
     }
       // Verify OTP logic centralized here
@@ -48,17 +53,19 @@ export class AuthService {
     if (!member) {
       throw new ApiError(httpStatus.BAD_REQUEST, 'Member not found.');
     }
+    if (!OTP_WHITELISTED_USER.has(phone)) {
+      if (!member.otp || !member.otp_expiry) {
+        throw new ApiError(httpStatus.BAD_REQUEST, 'No OTP found for this user.');
+      }
 
-    if (!member.otp || !member.otp_expiry) {
-      throw new ApiError(httpStatus.BAD_REQUEST, 'No OTP found for this user.');
-    }
+      if (new Date() > member.otp_expiry) {
+        throw new ApiError(httpStatus.BAD_REQUEST, 'OTP expired. Please request a new one.');
+      }
 
-    if (new Date() > member.otp_expiry) {
-      throw new ApiError(httpStatus.BAD_REQUEST, 'OTP expired. Please request a new one.');
-    }
+      if (member.otp !== otp) {
+        throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid OTP.');
+      } 
 
-    if (member.otp !== otp) {
-      throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid OTP.');
     }
 
     // clear OTP after successful verification
