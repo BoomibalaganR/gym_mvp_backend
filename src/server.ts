@@ -13,6 +13,6 @@ dotenv.config(); // must come first
 (async () => {
   await connectDB();
   app.listen(config.port, () => {
-    console.log(`🚀 Server running on http://localhost:${config.port}`);
+    console.log(`🚀 Server running on http://localhost:${config.port}/health`);
   });
 })();
