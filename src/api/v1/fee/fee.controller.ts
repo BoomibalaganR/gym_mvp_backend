@@ -8,7 +8,7 @@ import FeeService from './fee.service';
 export class FeeController {
 
     create =  catchAsync(async (req: Request, res: Response) => {
-      const fees = await FeeService.createFee(req.gym, req.user, req.params.memberId, req.body);
+      const fees = await FeeService.createFee(req.gym, req.user, req.params.memberId as string, req.body);
       return ApiResponse.created(res, 'Fee created', fees);
     });
 

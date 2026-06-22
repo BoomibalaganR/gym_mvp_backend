@@ -28,14 +28,14 @@ app.use('/api/v1/fees', feeRoutes);
 app.use('/api/v1/dashboard', dashboardReoutes);
 
 app.get('/health', async (_, res) => {
-    const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
-    res.json({
-        status: dbStatus === 'connected' ? 'healthy' : 'unhealthy',
-        database: dbStatus,
-        timestamp: new Date().toISOString(),
-        uptime: process.uptime(),
-        environment: config.node_env || 'development'
-    });
+  const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
+  res.json({
+    status: dbStatus === 'connected' ? 'healthy' : 'unhealthy',
+    database: dbStatus,
+    timestamp: new Date().toISOString(),
+    uptime: `${Math.floor(process.uptime())} seconds`,
+    environment: config.node_env || 'development'
+  });
 });
 
 app.use(errorHandler);
